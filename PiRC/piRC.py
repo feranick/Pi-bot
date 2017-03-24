@@ -13,7 +13,7 @@
 print(__doc__)
 
 import RPi.GPIO as GPIO
-import time
+import time, sys
 import random as rd
 
 
@@ -60,7 +60,7 @@ def runMotor(state, motor):
     if motor==True: # motor for powering vehicle
         m1 = 5
         m2 = 7
-    else            # motor for steering
+    else:            # motor for steering
         m1 = 11
         m2 = 13
 

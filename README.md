@@ -10,3 +10,8 @@ Target
 Communication:
 - via WiFi (HTML, js) or bluetooth.
 - for now, it can go by itself. 
+
+Since it uses Python3, it requires rpi-gpio package:
+
+    sudo apt-get install python3-rpi.gpio 
+
