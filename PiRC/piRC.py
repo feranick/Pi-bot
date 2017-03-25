@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170324b
+* version: 20170325a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -56,7 +56,7 @@ def main():
         obstacleAvoidance(l,r)
 
 #************************************
-''' Control Motors 2'''
+''' Control Motors'''
 #************************************
 def runMotor(motor, state):
     if motor == 1:  # motor for powering vehicle
@@ -97,22 +97,18 @@ def obstacleAvoidance(l,r):
         time.sleep(timeSleepSensor)
     elif r==0 & l==0:
         print('Obstacle detected in front',str(r),'BRAKE!')
-        runMotor(0, 0)
+        randomDirection = int(rd.uniform(-2,2))
+        runMotor(0,randomDirection)
         runMotor(1, -1)
         time.sleep(timeTransient1)
-        randomDirection = int(rd.uniform(-2,2))
-
-        runMotor(0,int(rd.uniform(-2,2)))
+        runMotor(0,-randomDirection)
         runMotor(1, 1)
         time.sleep(timeTransient2)
-
     runMotor(0, 0)
-
 
 #************************************
 ''' Read IR sensors '''
 #************************************
-
 def irSensors():
     l=GPIO.input(3)                         #Reading output of right IR sensor
     r=GPIO.input(16)                        #Reading output of left IR sensor
