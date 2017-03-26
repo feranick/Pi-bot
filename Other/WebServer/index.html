@@ -1,30 +1,48 @@
 <html>
 <body>
-<title>DIY Hacking</title>
+<title>Pi-RC</title>
 <style type="text/css">
 h1{
 	padding-left: 300px;
 }
 form{
-	padding-left: 550px;
+	padding-left: 250px;
 }
-#on{
+#up{
 	position: absolute;
-	top: 100px;
+	left: 250px;
+	top: 50px;
 	width: 70px;
-	height: 50px;
+	height: 100px;
 }
-#off{
+#down{
 	position: absolute;
-	top: 200px;
+	left: 250px;
+	top: 150px;
 	width: 70px;
-	height: 50px;
+	height: 100px;
 }
+#left{
+        position: absolute;
+	left: 50px;
+        top: 100px;
+        width: 70px;
+        height: 100px;
+}
+#right{
+        position: absolute;
+        left: 450px;
+        top: 100px;
+        width: 70px;
+        height: 100px;
+}
+
 </style>
-<h1> DIY Hacking - Internet of Things Implementation </h1>
 <form action = "button.php" method = "POST">
-<input type = "submit" name ="on" id="on" value = "Turn On">
-<input type = "submit" name ="off" id="off" value = "Turn Off">
+<input type = "submit" name ="up" id="up" value = "UP">
+<input type = "submit" name ="left" id="left" value = "LEFT">
+<input type = "submit" name ="right" id="right" value = "RIGHT">
+<input type = "submit" name ="down" id="down" value = "DOWN">
 </form>
 </body>
 </html>
