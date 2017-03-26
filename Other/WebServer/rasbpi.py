@@ -1,24 +1,28 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import RPi.GPIO as GPIO
-import urllib2
+from time import sleep
+
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(5,GPIO.OUT)
 true = 1
 
-baseURL = 'http://192.168.1.8/'
+fileName = "buttonStatus.txt"
 
 while(true):
-    try:
-        response = urllib2.urlopen(baseURL + 'PiRC/buttonStatus.php')
-        status = response.read()
-    except urllib2.HTTPError, e:
-        print e.code
-    except urllib2.URLError, e:
-        print e.args
+    with open(fileName, 'r') as f:
+        status = f.readlines()
+    if(status != 'ZERO'):
+        with open(fileName, 'ab') as f:
+            f.write("ZERO")
+    sleep(0.2)
+    print(status)
 
-    print status
-    if status=='ON':
+    # This needs fixing with proper channels
+    if status=='UP':
         GPIO.output(5,True)
-    elif status=='OFF':
+    elif status=='DOWN':
         GPIO.output(5,False)
 
