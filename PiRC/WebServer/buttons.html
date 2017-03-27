@@ -1,4 +1,13 @@
 <html>
+    <head>
+        <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=0;" />
+        
+        <!-- Eliminate url and button bars if added to home screen -->
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        
+        <!-- Choose how to handle the phone status bar -->
+        <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    </head>
 <body>
 <title>Pi-RC</title>
 <style type="text/css">
@@ -52,7 +61,7 @@ form{
 }
 
 </style>
-<form action = "button.php" method = "POST">
+<form action = "index.php" method = "POST">
 <input type = "submit" name ="steer" id="left" value = "LEFT">
 <input type = "submit" name ="steer" id="zero" value = "ZERO">
 <input type = "submit" name ="steer" id="right" value = "RIGHT">

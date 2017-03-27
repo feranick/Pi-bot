@@ -32,5 +32,5 @@ h2{
 </html>
 ";
 
-include('index.html');
+include('buttons.html');
 ?>
