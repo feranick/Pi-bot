@@ -49,8 +49,7 @@ powerFile = "powerStatus.txt"
 def main():
     
     #make sure motors are stopped
-    runMotor(1, 0)
-    runMotor(0, 0)
+    fullStop()
     
     while True:
         l, r = irSensors()
@@ -149,6 +148,18 @@ def irSensors():
     l=GPIO.input(3)                         #Reading output of right IR sensor
     r=GPIO.input(16)                        #Reading output of left IR sensor
     return l, r
+
+#************************************
+''' Full Stop '''
+#************************************
+def fullStop():
+    print('\nFULL STOP\n')
+    with open(webFolder+steerFile, 'w') as f:
+        f.write("ZERO")
+    runMotor(0,0)
+    with open(webFolder+powerFile, 'w') as f:
+        f.write("STOP")
+    runMotor(1,0)
 
 #************************************
 ''' Main initialization routine '''
