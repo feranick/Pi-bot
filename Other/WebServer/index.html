@@ -10,28 +10,42 @@ form{
 }
 #up{
 	position: absolute;
-	left: 250px;
+	left: 500px;
 	top: 50px;
 	width: 70px;
 	height: 100px;
 }
+#stop{
+        position: absolute;
+        left: 500px;
+        top: 100px;
+        width: 70px;
+        height: 100px;
+}
 #down{
 	position: absolute;
-	left: 250px;
+	left: 500px;
 	top: 150px;
 	width: 70px;
 	height: 100px;
 }
 #left{
         position: absolute;
-	left: 100px;
+	left: 50px;
         top: 100px;
         width: 70px;
         height: 100px;
 }
 #right{
         position: absolute;
-        left: 400px;
+        left: 250px;
+        top: 100px;
+        width: 70px;
+        height: 100px;
+}
+#zero{
+        position: absolute;
+        left: 150px;
         top: 100px;
         width: 70px;
         height: 100px;
@@ -39,10 +53,12 @@ form{
 
 </style>
 <form action = "button.php" method = "POST">
-<input type = "submit" name ="up" id="up" value = "UP">
-<input type = "submit" name ="left" id="left" value = "LEFT">
-<input type = "submit" name ="right" id="right" value = "RIGHT">
-<input type = "submit" name ="down" id="down" value = "DOWN">
+<input type = "submit" name ="steer" id="left" value = "LEFT">
+<input type = "submit" name ="steer" id="zero" value = "ZERO">
+<input type = "submit" name ="steer" id="right" value = "RIGHT">
+<input type = "submit" name ="power" id="up" value = "UP">
+<input type = "submit" name ="power" id="stop" value = "STOP">
+<input type = "submit" name ="power" id="down" value = "DOWN">
 </form>
 </body>
 </html>
