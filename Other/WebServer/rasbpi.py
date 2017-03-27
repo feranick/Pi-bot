@@ -15,28 +15,28 @@ powerFile = "powerStatus.txt"
 while(true):
     with open(powerFile, 'r') as f:
         powerStatus = f.readlines()
-    print(powerStatus)
+    print(powerStatus[0])
     with open(steerFile, 'r') as f:
         steerStatus = f.readlines()
-    print(steerStatus)
-    speep(0.2)
-    if(steerStatus != 'ZERO'):
-        with open(fileName, 'ab') as f:
+    print(steerStatus[0])
+    sleep(0.1)
+    if(steerStatus[0] != 'ZERO'):
+        with open(steerFile, 'w') as f:
             f.write("ZERO")
-    	sleep(0.2)
-    	print(steerStatus)
+        sleep(0.1)
+        print(steerStatus[0])
 
     # This needs fixing with proper channels
     if powerStatus=='UP':
         GPIO.output(5,True)
     elif powerStatus=='DOWN':
         GPIO.output(5,False)
-    elif powerStatus=='STOP'
+    elif powerStatus=='STOP':
         GPIO.output(5,False)
 
     if steerStatus=='LEFT':
         GPIO.output(5,True)
     elif steerStatus=='RIGHT':
         GPIO.output(5,False)
-    elif steerStatus=='ZERO'
+    elif steerStatus=='ZERO':
         GPIO.output(5,False)
