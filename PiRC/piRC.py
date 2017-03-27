@@ -34,6 +34,7 @@ GPIO.setup(13,GPIO.OUT)  #BIN2 motor input B
 GPIO.setwarnings(False)
 
 timeSleepSensor = 0.1
+timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.5
 
@@ -52,11 +53,6 @@ def main():
     runMotor(0, 0)
     
     while True:
-
-        #run power motor
-        runMotor(1, 1)
-        runMotor(0, 0)
-        
         l, r = irSensors()
         obstacleAvoidance(l,r)
 
@@ -94,19 +90,13 @@ def runMotor(motor, state):
 #************************************
 def runManualControls():
     with open(webFolder+powerFile, 'r') as f:
-        powerStatus = f.readlines()
-    print(powerStatus[0])
+        powerStatus = f.readlines()[0]
+    print(powerStatus)
+    sleep(timeTransient0)
     with open(webFolder+steerFile, 'r') as f:
-        steerStatus = f.readlines()
-    print(steerStatus[0])
-    sleep(0.1)
-    if(steerStatus[0] != 'ZERO'):
-        with open(steerFile, 'w') as f:
-            f.write("ZERO")
-        sleep(0.1)
-        print(steerStatus[0])
+        steerStatus = f.readlines()[0]
+    print(steerStatus)
 
-    # This needs fixing with proper channels
     if powerStatus=='UP':
         runMotor(1,1)
     elif powerStatus=='DOWN':
@@ -124,7 +114,7 @@ def runManualControls():
         with open(webFolder+steerFile, 'w') as f:
             f.write("ZERO")
         sleep(timeTransient1)
-        print(steerStatus[0])
+        print('\t',steerStatus)
         runMotor(0,0)
 
 #************************************
