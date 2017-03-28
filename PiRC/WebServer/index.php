@@ -23,8 +23,8 @@ console.log('PHP:" .$status. "');
 <style type=text/css>
 h2{
         position: absolute;
-        top: 150px;
-        left: 100px;
+        top: 220px;
+        left: 140px;
 }
 </style>
 <h2>Going $status</h2>
