@@ -1,17 +1,27 @@
-# Pi-bot
+# Pi-bot (piRC)
 Raspberry Pi Robots
 
 Under development. More to come.
 
-Target
+Hardware
+=========
 - robot: RC car with one motor for power, one motor for steering.
 - controller: Raspberry PI zero w
 
-Communication:
-- via WiFi (HTML, js) or bluetooth.
-- for now, it can go by itself. 
+Communication
+==============
+HTML-PHP is used to write status for power, steer on file. 
+Python script reads such files and send command to GPIO. 
 
-Since it uses Python3, it requires rpi-gpio package:
+Driving mode
+=============
+- kind of automated (tries to avoid obstacles)
+- controlled via HTML
 
-    sudo apt-get install python3-rpi.gpio 
+Requirements
+=============
+Since it uses Python3, it requires rpi.gpio package:
+
+    sudo apt-get install python3-rpi.gpio
+
 
