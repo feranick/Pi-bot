@@ -1,12 +1,8 @@
 #!/bin/bash
 
-webfolder="/var/www/html/pirc"
-
 chmod +x piRC.py
-mkdir $webfolder
 
-cp WebServer/* $webfolder
-chmod 777 $webfolder/powerStatus.txt
-chmod 777 $webfolder/steerStatus.txt
+chmod 777 WebServer/powerStatus.txt
+chmod 777 WebServer/steerStatus.txt
 
 echo Done!
