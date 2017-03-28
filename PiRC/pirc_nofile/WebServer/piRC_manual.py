@@ -13,7 +13,7 @@
 #print(__doc__)
 
 import sys
-sys.path.append('piRC_lib')
+sys.path.append('../piRC_lib')
 
 import piRC_gpio
 from piRC_lib import *
@@ -28,7 +28,10 @@ timeTransient2 = 0.5
 ''' Main initialization routine '''
 #************************************
 def main():
-    runManualControls(sys.argv[1])
+    if len(sys.argv) > 1:
+        runManualControls(sys.argv[1])
+    else:
+        return
 
 #************************************
 ''' RunManualControls '''
