@@ -1,9 +1,7 @@
 <?php
-
 $status = $_POST['status'];
 
-#$command = escapeshellcmd("/var/www/html/pirc_manual/piRC.py " .$status);
-$command = "/var/www/html/pirc_manual/piRC.py $status 2>&1";
+$command = "sudo /var/www/html/pirc_nofile/piRC_manual.py $status 2>&1";
 $output = shell_exec($command);
 echo $output;
 

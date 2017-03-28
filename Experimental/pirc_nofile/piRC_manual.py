@@ -37,9 +37,6 @@ timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.5
 
-webFolder = "/var/www/html/pirc_manual/"
-steerFile = "log.txt"
-
 #************************************
 ''' Main initialization routine '''
 #************************************
@@ -96,8 +93,8 @@ def runManualControls(status):
         sleep(timeTransient1)
         runMotor(0,0)
 
-    with open(webFolder+steerFile, 'w') as f:
-        f.write(status)
+    #with open(webFolder+steerFile, 'w') as f:
+    #    f.write(status)
 
 #************************************
 ''' Obstacle Avoidance '''
