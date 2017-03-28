@@ -1,7 +1,8 @@
 <?php
 $status = $_POST['status'];
 
-$command = "sudo /var/www/html/pirc_nofile/piRC_manual.py $status 2>&1";
+//$command = "sudo python3 piRC_manual.cpython-34.pyc $status 2>&1";y
+$command = "sudo ./piRC_manual.py $status 2>&1";
 $output = shell_exec($command);
 echo $output;
 

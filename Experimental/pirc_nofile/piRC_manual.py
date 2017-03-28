@@ -14,13 +14,10 @@
 
 import RPi.GPIO as GPIO
 from time import sleep
-import sys, os.path, getopt
-import random as rd
+import sys
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(3, GPIO.IN)                            #Right sensor connection
-GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Left sensor connection
 
 #these need to be fixed for TB6612
 GPIO.setup(5,GPIO.OUT)   #AIN1 motor input A
@@ -42,8 +39,7 @@ timeTransient2 = 0.5
 #************************************
 def main():
     runManualControls(sys.argv[1])
-    l, r = irSensors()
-    obstacleAvoidance(l,r)
+
 
 #************************************
 ''' Control Motors'''
@@ -95,52 +91,6 @@ def runManualControls(status):
 
     #with open(webFolder+steerFile, 'w') as f:
     #    f.write(status)
-
-#************************************
-''' Obstacle Avoidance '''
-#************************************
-def obstacleAvoidance(l,r):
-    if l==0 & r!=0:                                #Right IR sensor detects an object
-        print('Obstacle detected on Left',str(l))
-        runMotor(0, 1)
-        runMotor(1, 1)
-        sleep(timeSleepSensor)
-    elif r==0 & l!=0:                              #Left IR sensor detects an object
-        print('Obstacle detected on Right',str(r))
-        runMotor(0, -1)
-        runMotor(1, 1)
-        sleep(timeSleepSensor)
-    elif r==0 & l==0:
-        print('Obstacle detected in front',str(r),'BRAKE!')
-        randomDirection = int(rd.uniform(-2,2))
-        runMotor(0,randomDirection)
-        runMotor(1, -1)
-        sleep(timeTransient1)
-        runMotor(0,-randomDirection)
-        runMotor(1, 1)
-        sleep(timeTransient2)
-    runMotor(0, 0)
-
-#************************************
-''' Read IR sensors '''
-#************************************
-def irSensors():
-    l=GPIO.input(3)                         #Reading output of right IR sensor
-    r=GPIO.input(16)                        #Reading output of left IR sensor
-    return l, r
-
-#************************************
-''' Full Stop '''
-#************************************
-def fullStop():
-    print('\nFULL STOP\n')
-    with open(webFolder+steerFile, 'w') as f:
-        f.write("ZERO")
-    runMotor(0,0)
-    with open(webFolder+powerFile, 'w') as f:
-        f.write("STOP")
-    runMotor(1,0)
-
 #************************************
 ''' Main initialization routine '''
 #************************************

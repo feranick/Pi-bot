@@ -17,7 +17,6 @@ from time import sleep
 import sys
 import random as rd
 
-
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(3, GPIO.IN)                            #Right sensor connection
@@ -30,8 +29,6 @@ GPIO.setup(7,GPIO.OUT)   #AIN2 motor input B
 GPIO.setup(11,GPIO.OUT)  #BIN1 motor input A
 GPIO.setup(13,GPIO.OUT)  #BIN2 motor input B
 #GPIO.setup(14,GPIO.OUT)   #PWNA motor input B (power) - analog
-
-GPIO.setwarnings(False)
 
 timeSleepSensor = 0.1
 timeTransient0 = 0.05
