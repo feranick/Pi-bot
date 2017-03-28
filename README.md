@@ -24,4 +24,16 @@ Since it uses Python3, it requires rpi.gpio package:
 
     sudo apt-get install python3-rpi.gpio
 
+Use
+===
+Two versions of PiRC are provided:
+- pirc_file: communication between PHP and python is done via shared file. auto and manual 
+control take place within the same python script
+- pirc_nofile: communication between PHP and python is done via shell. Auto control is, 
+well, automated, in the background. Manual control is done via python script when the user 
+is calling for an action.
 
+To be working properly, a library folder piRC_lib needs to be copied inside the two main 
+folders respectively:
+- pirc_file
+- pirc_nofile
