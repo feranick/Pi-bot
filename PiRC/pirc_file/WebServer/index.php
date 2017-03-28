@@ -19,6 +19,7 @@ console.log('PHP:" .$status. "');
 </script>
 
 <html>
+<title> PiRC - file exchange version</title>    
 <body>
 <style type=text/css>
 h2{

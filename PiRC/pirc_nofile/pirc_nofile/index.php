@@ -12,6 +12,7 @@ console.log('PHP:" .$status. "');
 </script>
 
 <html>
+<title> PiRC - no file version</title>
 <body>
 <style type=text/css>
 h2{
