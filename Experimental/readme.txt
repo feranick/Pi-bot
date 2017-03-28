@@ -1,3 +1,6 @@
+pirc_auto.py: controls sensors and object avoidance. It should run in the background.
+pirc_manual.py: called from PHP, runs only when needed by user intervention.
+
 In order to have the required permission:
 
 - add the following to the sudoers (sudo visudo):

@@ -3,8 +3,8 @@
 '''
 **********************************************************
 *
-* PiRC
-* version: 20170327a
+* PiRC - auto
+* version: 20170328a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -35,10 +35,6 @@ timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.5
 
-webFolder = "/var/www/html/pirc/"
-steerFile = "steerStatus.txt"
-powerFile = "powerStatus.txt"
-
 #************************************
 ''' Main initialization routine '''
 #************************************
@@ -52,7 +48,6 @@ def main():
         l, r = irSensors()
         obstacleAvoidance(l,r)
 
-        runManualControls()
 
 #************************************
 ''' Control Motors'''
@@ -80,38 +75,6 @@ def runMotor(motor, state):
     #full power
     #GPIO.output(pwn, 255)
 
-
-#************************************
-''' RunManualControls '''
-#************************************
-def runManualControls():
-    with open(webFolder+powerFile, 'r') as f:
-        powerStatus = f.readlines()[0]
-    print(powerStatus)
-    sleep(timeTransient0)
-    with open(webFolder+steerFile, 'r') as f:
-        steerStatus = f.readlines()[0]
-    print(steerStatus)
-
-    if powerStatus=='UP':
-        runMotor(1,1)
-    elif powerStatus=='DOWN':
-        runMotor(1,-1)
-    elif powerStatus=='STOP':
-        runMotor(1,0)
-
-    if steerStatus=='ZERO':
-        runMotor(0,0)
-    else:
-        if steerStatus=='LEFT':
-            runMotor(0,1)
-        elif steerStatus=='RIGHT':
-            runMotor(0,-1)
-        with open(webFolder+steerFile, 'w') as f:
-            f.write("ZERO")
-        sleep(timeTransient1)
-        print('\t',steerStatus)
-        runMotor(0,0)
 
 #************************************
 ''' Obstacle Avoidance '''

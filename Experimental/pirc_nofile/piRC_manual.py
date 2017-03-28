@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_manual
-* version: 20170327a
+* version: 20170328a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
