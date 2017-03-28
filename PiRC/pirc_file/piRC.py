@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170328a
+* version: 20170328b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -12,24 +12,14 @@
 '''
 print(__doc__)
 
-import RPi.GPIO as GPIO
-from time import sleep
 import sys
+sys.path.append('piRC_lib')
+
+import piRC_gpio
+from piRC_lib import *
+
+from time import sleep
 import random as rd
-
-
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(3, GPIO.IN)                            #Right sensor connection
-GPIO.setup(16, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Left sensor connection
-
-#these need to be fixed for TB6612
-GPIO.setup(5,GPIO.OUT)   #AIN1 motor input A
-GPIO.setup(7,GPIO.OUT)   #AIN2 motor input B
-#GPIO.setup(5,GPIO.OUT)   #PWNA motor input B (power) - analog
-GPIO.setup(11,GPIO.OUT)  #BIN1 motor input A
-GPIO.setup(13,GPIO.OUT)  #BIN2 motor input B
-#GPIO.setup(14,GPIO.OUT)   #PWNA motor input B (power) - analog
 
 timeSleepSensor = 0.1
 timeTransient0 = 0.05
@@ -54,33 +44,6 @@ def main():
         obstacleAvoidance(l,r)
 
         runManualControls()
-
-#************************************
-''' Control Motors'''
-#************************************
-def runMotor(motor, state):
-    if motor == 1:  # motor for powering vehicle
-        in1 = 5
-        in2 = 7
-        #pwn = 3
-    
-    elif motor == 0:    # motor for steering
-        in1 = 11
-        in2 = 13
-        #pwn = 6
-    
-    if state == -1:
-        GPIO.output(in1,0)
-        GPIO.output(in2,1)
-    if state == 0:
-        GPIO.output(in1,0)
-        GPIO.output(in2,0)
-    if state == 1:
-        GPIO.output(in1,1)
-        GPIO.output(in2,0)
-    #full power
-    #GPIO.output(pwn, 255)
-
 
 #************************************
 ''' RunManualControls '''
@@ -138,14 +101,6 @@ def obstacleAvoidance(l,r):
         runMotor(1, 1)
         sleep(timeTransient2)
     runMotor(0, 0)
-
-#************************************
-''' Read IR sensors '''
-#************************************
-def irSensors():
-    l=GPIO.input(3)                         #Reading output of right IR sensor
-    r=GPIO.input(16)                        #Reading output of left IR sensor
-    return l, r
 
 #************************************
 ''' Full Stop '''
