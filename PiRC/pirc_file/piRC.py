@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170329a
+* version: 20170328b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -25,8 +25,9 @@ timeSleepSensor = 0.1
 timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.5
+timeTransient3 = 1
 
-webFolder = "/var/www/html/pirc_file/WebServer"
+webFolder = "/var/www/html/pirc_file/WebServer/"
 steerFile = "steerStatus.txt"
 powerFile = "powerStatus.txt"
 
@@ -57,11 +58,18 @@ def runManualControls():
         steerStatus = f.readlines()[0]
     print(steerStatus)
 
-    if powerStatus=='UP':
-        runMotor(1,1)
-    elif powerStatus=='DOWN':
-        runMotor(1,-1)
-    elif powerStatus=='STOP':
+    if powerStatus=='STOP':
+        runMotor(1,0)
+    else:
+        if powerStatus=='DOWN':
+            runMotor(1,-1)
+        elif powerStatus=='UP':
+            runMotor(1,1)
+
+        with open(webFolder+powerFile, 'w') as f:
+            f.write("STOP")
+        sleep(timeTransient3)
+        print('\t',powerStatus)
         runMotor(1,0)
 
     if steerStatus=='ZERO':
