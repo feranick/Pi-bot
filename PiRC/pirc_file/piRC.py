@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170328b
+* version: 20170329a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -26,7 +26,7 @@ timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.5
 
-webFolder = "/var/www/html/pirc/"
+webFolder = "/var/www/html/pirc_file/WebServer"
 steerFile = "steerStatus.txt"
 powerFile = "powerStatus.txt"
 
@@ -68,9 +68,9 @@ def runManualControls():
         runMotor(0,0)
     else:
         if steerStatus=='LEFT':
-            runMotor(0,1)
-        elif steerStatus=='RIGHT':
             runMotor(0,-1)
+        elif steerStatus=='RIGHT':
+            runMotor(0,1)
         with open(webFolder+steerFile, 'w') as f:
             f.write("ZERO")
         sleep(timeTransient1)
