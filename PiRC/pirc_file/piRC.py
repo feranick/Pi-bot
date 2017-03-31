@@ -107,7 +107,8 @@ def obstacleAvoidance(l,r):
         runMotor(0,-randomDirection)
         runMotor(1, 1)
         sleep(timeTransient3)
-    runMotor(0, 0)
+    elif r==0 and l==0:
+        runMotor(0, 0)
 
 #************************************
 ''' Full Stop '''
