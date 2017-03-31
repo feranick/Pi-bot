@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170328b
+* version: 20170330a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -24,7 +24,7 @@ import random as rd
 timeSleepSensor = 0.1
 timeTransient0 = 0.05
 timeTransient1 = 0.2
-timeTransient2 = 0.5
+timeTransient2 = 0.75
 timeTransient3 = 1
 
 webFolder = "/var/www/html/pirc_file/WebServer/"
@@ -36,15 +36,17 @@ powerFile = "powerStatus.txt"
 #************************************
 
 def main():
-    
     #make sure motors are stopped
     fullStop()
     
     while True:
-        l, r = irSensors()
-        obstacleAvoidance(l,r)
-
-        runManualControls()
+        try:
+            l, r = irSensors()
+            obstacleAvoidance(l,r)
+            runManualControls()
+        except:
+            fullStop()
+            return
 
 #************************************
 ''' RunManualControls '''
@@ -60,17 +62,14 @@ def runManualControls():
 
     if powerStatus=='STOP':
         runMotor(1,0)
+        with open(webFolder+powerFile, 'w') as f:
+            f.write("STOP")
+        sleep(timeTransient1)
     else:
         if powerStatus=='DOWN':
             runMotor(1,-1)
         elif powerStatus=='UP':
             runMotor(1,1)
-
-        with open(webFolder+powerFile, 'w') as f:
-            f.write("STOP")
-        sleep(timeTransient3)
-        print('\t',powerStatus)
-        runMotor(1,0)
 
     if steerStatus=='ZERO':
         runMotor(0,0)
@@ -89,22 +88,22 @@ def runManualControls():
 ''' Obstacle Avoidance '''
 #************************************
 def obstacleAvoidance(l,r):
-    if l==0 & r!=0:                                #Right IR sensor detects an object
+    if r==0 and l!=0:                                #Right IR sensor detects an object
         print('Obstacle detected on Left',str(l))
         runMotor(0, 1)
         runMotor(1, 1)
-        sleep(timeSleepSensor)
-    elif r==0 & l!=0:                              #Left IR sensor detects an object
+        sleep(timeTransient2)
+    elif r!=0 and l==0:                               #Left IR sensor detects an object
         print('Obstacle detected on Right',str(r))
         runMotor(0, -1)
         runMotor(1, 1)
-        sleep(timeSleepSensor)
-    elif r==0 & l==0:
+        sleep(timeTransient2)
+    elif r!=0 and l!=0:
         print('Obstacle detected in front',str(r),'BRAKE!')
         randomDirection = int(rd.uniform(-2,2))
         runMotor(0,randomDirection)
         runMotor(1, -1)
-        sleep(timeTransient1)
+        sleep(timeTransient2)
         runMotor(0,-randomDirection)
         runMotor(1, 1)
         sleep(timeTransient2)

@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_manual
-* version: 20170328b
+* version: 20170330a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -22,7 +22,7 @@ from time import sleep
 timeSleepSensor = 0.1
 timeTransient0 = 0.05
 timeTransient1 = 0.2
-timeTransient2 = 0.5
+timeTransient2 = 0.75
 
 #************************************
 ''' Main initialization routine '''
@@ -54,8 +54,6 @@ def runManualControls(status):
         sleep(timeTransient1)
         runMotor(0,0)
 
-    #with open(webFolder+steerFile, 'w') as f:
-    #    f.write(status)
 #************************************
 ''' Main initialization routine '''
 #************************************
