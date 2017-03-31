@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - auto
-* version: 20170330a
+* version: 20170331a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -25,6 +25,7 @@ timeSleepSensor = 0.1
 timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.75
+timeTransient3 = 1
 
 #************************************
 ''' Main initialization routine '''
@@ -58,13 +59,13 @@ def obstacleAvoidance(l,r):
         sleep(timeTransient2)
     elif r!=0 and l!=0:
         print('Obstacle detected in front',str(r),'BRAKE!')
-        randomDirection = int(rd.uniform(-2,2))
+        randomDirection = rd.choice([-1,1])
         runMotor(0,randomDirection)
         runMotor(1, -1)
-        sleep(timeTransient1)
+        sleep(timeTransient3)
         runMotor(0,-randomDirection)
         runMotor(1, 1)
-        sleep(timeTransient2)
+        sleep(timeTransient3)
     runMotor(0, 0)
 
 #************************************

@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170330a
+* version: 20170331a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -100,13 +100,13 @@ def obstacleAvoidance(l,r):
         sleep(timeTransient2)
     elif r!=0 and l!=0:
         print('Obstacle detected in front',str(r),'BRAKE!')
-        randomDirection = int(rd.uniform(-2,2))
+        randomDirection = rd.choice([-1,1])
         runMotor(0,randomDirection)
         runMotor(1, -1)
-        sleep(timeTransient2)
+        sleep(timeTransient3)
         runMotor(0,-randomDirection)
         runMotor(1, 1)
-        sleep(timeTransient2)
+        sleep(timeTransient3)
     runMotor(0, 0)
 
 #************************************
