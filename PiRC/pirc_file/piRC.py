@@ -42,7 +42,7 @@ def main():
     while True:
         try:
             l, r, c = irSensors()
-            obstacleAvoidance(l,r)
+            obstacleAvoidance(l,r,c)
             runManualControls()
         except:
             fullStop()
@@ -87,7 +87,7 @@ def runManualControls():
 #************************************
 ''' Obstacle Avoidance '''
 #************************************
-def obstacleAvoidance(l,r):
+def obstacleAvoidance(l,r,c):
     if r==0 and l!=0:                                #Right IR sensor detects an object
         print('Obstacle detected on Left',str(l))
         runMotor(0, 1)
