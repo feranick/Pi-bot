@@ -15,6 +15,7 @@ import RPi.GPIO as GPIO
 
 IRl = 3
 IRr = 5
+IRc = 7
 
 AIN1 = 11
 AIN2 = 13
@@ -27,6 +28,7 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(IRl, GPIO.IN)                            #Right sensor connection
 GPIO.setup(IRr, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Left sensor connection
+GPIO.setup(IRc, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #these need to be fixed for TB6612
 GPIO.setup(AIN1,GPIO.OUT)   #AIN1 motor input A
