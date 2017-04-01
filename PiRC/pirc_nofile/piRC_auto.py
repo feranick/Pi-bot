@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - auto
-* version: 20170331a
+* version: 20170401a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -37,7 +37,7 @@ def main():
     
     while True:
         try:
-            l, r = irSensors()
+            l, r, c = irSensors()
             obstacleAvoidance(l,r)
         except:
             fullStop()

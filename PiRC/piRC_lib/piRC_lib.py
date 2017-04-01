@@ -46,9 +46,10 @@ def runMotor(motor, state):
 ''' Read IR sensors '''
 #************************************
 def irSensors():
-    l=GPIO.input(IRl)                         #Reading output of right IR sensor
-    r=GPIO.input(IRr)                        #Reading output of left IR sensor
-    return l, r
+    l = GPIO.input(IRl)                         #Reading output of right IR sensor
+    r = GPIO.input(IRr)                        #Reading output of left IR sensor
+    c = GPIO.input(IRc)
+    return l, r, c
 
 #************************************
 ''' Main initialization routine '''
