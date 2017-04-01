@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170329b
+* version: 20170401a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -46,8 +46,8 @@ def runMotor(motor, state):
 ''' Read IR sensors '''
 #************************************
 def irSensors():
-    l=GPIO.input(IR1)                         #Reading output of right IR sensor
-    r=GPIO.input(IR2)                        #Reading output of left IR sensor
+    l=GPIO.input(IRl)                         #Reading output of right IR sensor
+    r=GPIO.input(IRr)                        #Reading output of left IR sensor
     return l, r
 
 #************************************
