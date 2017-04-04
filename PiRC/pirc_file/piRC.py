@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170401a
+* version: 20170404a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -42,7 +42,8 @@ def main():
     while True:
         try:
             l, r, c = irSensors()
-            obstacleAvoidance(l,r,c)
+            obstacleAvoidance3(l,r,c)
+            #obstacleAvoidance2(l,r,c)
             runManualControls()
         except:
             fullStop()
@@ -83,32 +84,6 @@ def runManualControls():
         sleep(timeTransient1)
         print('\t',steerStatus)
         runMotor(0,0)
-
-#************************************
-''' Obstacle Avoidance '''
-#************************************
-def obstacleAvoidance(l,r,c):
-    if r==0 and l!=0:                                #Right IR sensor detects an object
-        print('Obstacle detected on Left',str(l))
-        runMotor(0, 1)
-        runMotor(1, 1)
-        sleep(timeTransient2)
-    elif r!=0 and l==0:                               #Left IR sensor detects an object
-        print('Obstacle detected on Right',str(r))
-        runMotor(0, -1)
-        runMotor(1, 1)
-        sleep(timeTransient2)
-    elif r!=0 and l!=0:
-        print('Obstacle detected in front',str(r),'BRAKE!')
-        randomDirection = rd.choice([-1,1])
-        runMotor(0,randomDirection)
-        runMotor(1, -1)
-        sleep(timeTransient3)
-        runMotor(0,-randomDirection)
-        runMotor(1, 1)
-        sleep(timeTransient3)
-    elif r==0 and l==0:
-        runMotor(0, 0)
 
 #************************************
 ''' Full Stop '''

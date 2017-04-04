@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170401a
+* version: 20170404a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -15,6 +15,80 @@ from piRC_gpio import *
 from time import sleep
 import sys
 import random as rd
+
+# (d[cm],Voltage[V]) = (5,3.2);(12,2);(20,1.25);(28,1);(60,0.5)
+# https://goo.gl/BiFYpK
+minSafeDistanceVoltage = 1.25
+
+#************************************
+''' Obstacle Avoidance '''
+#************************************
+def obstacleAvoidance3(l,r,c):
+    if c>minSafeDistanceVoltage:
+        if r==0 and l!=0:                                #Right IR sensor detects an object
+            print('Obstacle detected on Left (l, r, c):',str(l),str(r),str(c))
+            runMotor(0, 1)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,-1)
+            runMotor(1, 1)
+        
+        elif r!=0 and l==0:                               #Left IR sensor detects an object
+            print('Obstacle detected on Right (l, r, c):',str(l),str(r),str(c))
+            runMotor(0, -1)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,1)
+            runMotor(1, 1)
+        
+        elif r==0 and l==0:
+            print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
+            randomDirection = rd.choice([-1,1])
+            runMotor(0,randomDirection)
+            runMotor(1, 1)
+            sleep(timeTransient2)
+        
+        elif r!=0 and l!=0:
+            print('Surrounded by obstacles - BRAKE! (l, r, c):',str(l),str(r),str(c))
+            runMotor(0,0)
+            runMotor(1, -1)
+            sleep(timeTransient2)
+            randomDirection = rd.choice([-1,1])
+            runMotor(0,randomDirection)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,-randomDirection)
+            runMotor(1, 1)
+            sleep(timeTransient3)
+
+    else:
+        print('All clear (l, r, c):',str(l),str(r),str(c))
+        runMotor(0, 0)
+
+
+''' Old 2 sensors version'''
+def obstacleAvoidance2(l,r,c):
+    if r==0 and l!=0:                                #Right IR sensor detects an object
+        print('Obstacle detected on Left',str(l))
+        runMotor(0, 1)
+        runMotor(1, 1)
+        sleep(timeTransient2)
+    elif r!=0 and l==0:                               #Left IR sensor detects an object
+        print('Obstacle detected on Right',str(r))
+        runMotor(0, -1)
+        runMotor(1, 1)
+        sleep(timeTransient2)
+    elif r!=0 and l!=0:
+        print('Obstacle detected in front',str(r),'BRAKE!')
+        randomDirection = rd.choice([-1,1])
+        runMotor(0,randomDirection)
+        runMotor(1, -1)
+        sleep(timeTransient3)
+        runMotor(0,-randomDirection)
+        runMotor(1, 1)
+        sleep(timeTransient3)
+    elif r==0 and l==0:
+        runMotor(0, 0)
 
 #************************************
 ''' Control Motors'''
