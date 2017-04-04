@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC-test
-* version: 20170401a
+* version: 20170404a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -26,6 +26,10 @@ timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.75
 timeTransient3 = 1
+
+# (d[cm],Voltage[V]) = (5,3.2);(12,2);(20,1.25);(28,1);(60,0.5)
+# https://goo.gl/BiFYpK
+minSafeDistanceVoltage = 1.25
 
 webFolder = "/var/www/html/pirc_file/WebServer/"
 steerFile = "steerStatus.txt"
@@ -88,7 +92,7 @@ def runManualControls():
 ''' Obstacle Avoidance '''
 #************************************
 def obstacleAvoidance(l,r,c):
-    if c!=0:
+    if c>minSafeDistanceVoltage:
         if r==0 and l!=0:                                #Right IR sensor detects an object
             print('Obstacle detected on Left (l, r, c):',str(l),str(r),str(c))
             runMotor(0, 1)
@@ -125,9 +129,9 @@ def obstacleAvoidance(l,r,c):
             runMotor(1, 1)
             sleep(timeTransient3)
 
-    elif c==0:
-            print('All clear (l, r, c):',str(l),str(r),str(c))
-            runMotor(0, 0)
+    else:
+        print('All clear (l, r, c):',str(l),str(r),str(c))
+        runMotor(0, 0)
 
 #************************************
 ''' Full Stop '''
