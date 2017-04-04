@@ -7,6 +7,9 @@ Hardware
 =========
 - robot: RC car with one motor for power, one motor for steering.
 - controller: Raspberry PI zero w
+- IR sensors:
+    - 2 front left side break beam sensors 3mm LEDs (https://www.adafruit.com/products/2167)
+    - 1 front GP2Y0A21YK0F Sharp IR Analog Distance Sensor 10-80cm
 
 Communication
 ==============
