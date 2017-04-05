@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_gpio library
-* version: 20170401a
+* version: 20170404b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -26,9 +26,9 @@ PWNB = 23
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(IRl, GPIO.IN)                            #Right sensor connection
-GPIO.setup(IRr, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Left sensor connection
-GPIO.setup(IRc, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(IRl, GPIO.IN) # Right sensor connection
+GPIO.setup(IRr, GPIO.IN) # Left sensor connection
+GPIO.setup(IRc, GPIO.IN) # Center sensor connection
 
 #these need to be fixed for TB6612
 GPIO.setup(AIN1,GPIO.OUT)   #AIN1 motor input A

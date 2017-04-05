@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170404a
+* version: 20170404b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -18,13 +18,12 @@ import random as rd
 
 # (d[cm],Voltage[V]) = (5,3.2);(12,2);(20,1.25);(28,1);(60,0.5)
 # https://goo.gl/BiFYpK
-minSafeDistanceVoltage = 1.25
 
 #************************************
 ''' Obstacle Avoidance '''
 #************************************
 def obstacleAvoidance3(l,r,c):
-    if c>minSafeDistanceVoltage:
+    if c!=0:
         if r==0 and l!=0:                                #Right IR sensor detects an object
             print('Obstacle detected on Left (l, r, c):',str(l),str(r),str(c))
             runMotor(0, 1)
