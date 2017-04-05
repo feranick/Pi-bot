@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170404b
+* version: 20170404c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -45,19 +45,19 @@ def obstacleAvoidance3(l,r,c):
             sleep(timeTransient3)
             runMotor(0,1)
             runMotor(1, 1)
-        
-        elif r==0 and l==0:
-            print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
-            randomDirection = rd.choice([-1,1])
-            runMotor(0,randomDirection)
-            runMotor(1, 1)
-            sleep(timeTransient2)
-        
-        elif r!=0 and l!=0:
-            print('Surrounded by obstacles - BRAKE! (l, r, c):',str(l),str(r),str(c))
-            runMotor(0,0)
-            runMotor(1, -1)
-            sleep(timeTransient2)
+
+        else:
+            if r==0 and l==0:
+            	print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
+            	runMotor(0,0)
+            	runMotor(1, -1)
+            	sleep(timeTransient1)
+            if r!=0 and l!=0:
+                print('Surrounded by obstacles - BRAKE! (l, r, c):',str(l),str(r),str(c))
+                runMotor(0,0)
+                runMotor(1, -1)
+                sleep(timeTransient2)            
+
             randomDirection = rd.choice([-1,1])
             runMotor(0,randomDirection)
             runMotor(1, -1)
