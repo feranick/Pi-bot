@@ -16,6 +16,12 @@ from time import sleep
 import sys
 import random as rd
 
+timeSleepSensor = 0.1
+timeTransient0 = 0.05
+timeTransient1 = 0.2
+timeTransient2 = 0.75
+timeTransient3 = 1
+
 # (d[cm],Voltage[V]) = (5,3.2);(12,2);(20,1.25);(28,1);(60,0.5)
 # https://goo.gl/BiFYpK
 

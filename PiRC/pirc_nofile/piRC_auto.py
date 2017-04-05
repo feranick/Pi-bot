@@ -21,12 +21,6 @@ from piRC_lib import *
 from time import sleep
 import random as rd
 
-timeSleepSensor = 0.1
-timeTransient0 = 0.05
-timeTransient1 = 0.2
-timeTransient2 = 0.75
-timeTransient3 = 1
-
 #************************************
 ''' Main initialization routine '''
 #************************************
