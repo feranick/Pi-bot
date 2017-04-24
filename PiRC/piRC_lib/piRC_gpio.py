@@ -35,9 +35,8 @@ GPIO.setmode(GPIO.BOARD)
 #GPIO.setup(IRc, GPIO.IN) # Center sensor connection
 
 GPIO.setup(TRIG,GPIO.OUT)
-GPIO.setup(ECHO1,GPIO.IN)
-GPIO.setup(ECHO2,GPIO.IN)
-GPIO.setup(ECHO3,GPIO.IN)
+for i in range(3):
+    GPIO.setup(ECHO[i],GPIO.IN)
 
 #these need to be fixed for TB6612
 GPIO.setup(AIN1,GPIO.OUT)   #AIN1 motor input A

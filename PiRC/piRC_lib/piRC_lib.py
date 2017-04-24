@@ -22,11 +22,61 @@ timeTransient1 = 0.2
 timeTransient2 = 0.75
 timeTransient3 = 1
 
-# (d[cm],Voltage[V]) = (5,3.2);(12,2);(20,1.25);(28,1);(60,0.5)
-# https://goo.gl/BiFYpK
 
 #************************************
 ''' Obstacle Avoidance '''
+''' ONLY FOR SONARS '''
+''' to be rewritten after calibration'''
+#************************************
+
+def obstacleAvoidanceSonars(l,r,c):
+    
+    if c!=0:
+        if r==0 and l!=0:                                #Right IR sensor detects an object
+            print('Obstacle detected on Left (l, r, c):',str(l),str(r),str(c))
+            runMotor(0, 1)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,-1)
+            runMotor(1, 1)
+        
+        elif r!=0 and l==0:                               #Left IR sensor detects an object
+            print('Obstacle detected on Right (l, r, c):',str(l),str(r),str(c))
+            runMotor(0, -1)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,1)
+            runMotor(1, 1)
+    
+        else:
+            if r==0 and l==0:
+                print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
+                runMotor(0,0)
+                runMotor(1, -1)
+                sleep(timeTransient1)
+            if r!=0 and l!=0:
+                print('Surrounded by obstacles - BRAKE! (l, r, c):',str(l),str(r),str(c))
+                runMotor(0,0)
+                runMotor(1, -1)
+                sleep(timeTransient2)
+            
+            randomDirection = rd.choice([-1,1])
+            runMotor(0,randomDirection)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,-randomDirection)
+            runMotor(1, 1)
+            sleep(timeTransient3)
+
+    else:
+        print('All clear (l, r, c):',str(l),str(r),str(c))
+        runMotor(0, 0)
+
+
+#************************************
+''' Obstacle Avoidance '''
+''' ONLY FOR IR SENSORS '''
+''' This will be deprecated when moving to sonars'''
 #************************************
 def obstacleAvoidance3(l,r,c):
     if c!=0:
@@ -131,7 +181,8 @@ def readAllSonars(TRIG, ECHO):
     distances = pool.map(readEcho, ECHO)
     pool.close()
     pool.join()
-    return distances
+    
+    return distances[0], distances[2], distances[1],
 
 def readEcho(ECHO):
     while GPIO.input(ECHO)==0:
@@ -155,6 +206,7 @@ def trigSonar(TRIG):
 
 #************************************
 ''' Read IR sensors '''
+''' This is obsolete) '''
 #************************************
 def irSensors():
     l = GPIO.input(IRl)                         #Reading output of right IR sensor
