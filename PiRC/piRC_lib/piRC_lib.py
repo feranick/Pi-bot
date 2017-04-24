@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170424a
+* version: 20170424b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -21,6 +21,7 @@ timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.75
 timeTransient3 = 1
+minDistance = 15
 
 
 #************************************
@@ -31,8 +32,8 @@ timeTransient3 = 1
 
 def obstacleAvoidanceSonars(l,r,c):
     
-    if c!=0:
-        if r==0 and l!=0:                                #Right IR sensor detects an object
+    if c<15:                                          #Center sonar does not detect an object
+        if r>minDistance and l<minDistance:           #Right sonar detects an object
             print('Obstacle detected on Left (l, r, c):',str(l),str(r),str(c))
             runMotor(0, 1)
             runMotor(1, -1)
@@ -40,7 +41,7 @@ def obstacleAvoidanceSonars(l,r,c):
             runMotor(0,-1)
             runMotor(1, 1)
         
-        elif r!=0 and l==0:                               #Left IR sensor detects an object
+        elif r<minDistance and l>minDistance:         #Left sonar detects an object
             print('Obstacle detected on Right (l, r, c):',str(l),str(r),str(c))
             runMotor(0, -1)
             runMotor(1, -1)
@@ -48,13 +49,13 @@ def obstacleAvoidanceSonars(l,r,c):
             runMotor(0,1)
             runMotor(1, 1)
     
-        else:
-            if r==0 and l==0:
+        elif:
+            if r>minDistance and l>minDistance:
                 print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
-                runMotor(0,0)
-                runMotor(1, -1)
+                #runMotor(0,0)
+                #runMotor(1, -1)
                 sleep(timeTransient1)
-            if r!=0 and l!=0:
+            if r<minDistance and l<minDistance:
                 print('Surrounded by obstacles - BRAKE! (l, r, c):',str(l),str(r),str(c))
                 runMotor(0,0)
                 runMotor(1, -1)
