@@ -3,4 +3,4 @@
 - add support for 4th sonar for back (reading).
 - add suppport for 4th sonar for obstable avoidance.
 - remove obsolete IR-based obstacle avoidance
-  
+- update voltage requirements for individual sub-boards  
