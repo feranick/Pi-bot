@@ -1,0 +1,4 @@
+- add accelerometer functions in lib
+- add ADC functions in lib for motors status check
+- add 4th sonar for back.
+- 
