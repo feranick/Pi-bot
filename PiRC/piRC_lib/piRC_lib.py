@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170404c
+* version: 20170424a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -12,7 +12,7 @@
 '''
 
 from piRC_gpio import *
-from time import sleep
+from time import sleep, time
 import sys
 import random as rd
 
@@ -120,6 +120,38 @@ def runMotor(motor, state):
         GPIO.output(in2,0)
     #full power
     GPIO.output(pwn, 255)
+
+#************************************
+''' Read sonars '''
+#************************************
+def readAllSonars(TRIG, ECHO):
+    trigSonar(TRIG)
+    from multiprocessing.dummy import Pool as ThreadPool
+    pool = ThreadPool(3)
+    distances = pool.map(readEcho, ECHO)
+    pool.close()
+    pool.join()
+    return distances
+
+def readEcho(ECHO):
+    while GPIO.input(ECHO)==0:
+        pulse_start = time()
+    while GPIO.input(ECHO)==1:
+        pulse_end = time()
+    pulse_duration = pulse_end - pulse_start
+    distance = pulse_duration * 17150
+    distance = round(distance, 2)
+    GPIO.cleanup()
+    #print("Distance:",distance,"cm")
+    return distance
+
+def trigSonar(TRIG):
+    GPIO.output(TRIG, False)
+    sleep(0.0001)
+    GPIO.output(TRIG, True)
+    sleep(0.00001)
+    GPIO.output(TRIG, False)
+
 
 #************************************
 ''' Read IR sensors '''
