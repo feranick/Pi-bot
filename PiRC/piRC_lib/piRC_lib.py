@@ -15,6 +15,10 @@ from piRC_gpio import *
 from time import sleep, time
 import sys
 import random as rd
+import Adafruit_ADXL345
+
+SCALE_MULTIPLIER = 0.004
+EARTH_GRAVITY_MS2  = 9.80665
 
 timeSleepSensor = 0.1
 timeTransient0 = 0.05
@@ -114,7 +118,7 @@ def readAllSonars(TRIG, ECHO):
     distances = pool.map(readEcho, ECHO)
     pool.close()
     pool.join()
-    
+    GPIO.cleanup()
     return distances[0], distances[2], distances[1], distances[3]
 
 def readEcho(ECHO):
@@ -125,7 +129,6 @@ def readEcho(ECHO):
     pulse_duration = pulse_end - pulse_start
     distance = pulse_duration * 17150
     distance = round(distance, 2)
-    GPIO.cleanup()
     #print("Distance:",distance,"cm")
     return distance
 
@@ -146,6 +149,17 @@ def irSensors():
     r = GPIO.input(IRr)                        #Reading output of left IR sensor
     c = GPIO.input(IRc)
     return l, r, c
+
+#************************************
+''' Read Accelerometer '''
+#************************************
+def readAccel(isG):
+    accel = Adafruit_ADXL345.ADXL345(address=0x53,busnum=1)
+    accel.set_range(Adafruit_ADXL345.ADXL345_RANGE_2_G)
+    x, y, z = [r*SCALE_MULTIPLIER for r in accel.read()]
+    if isG is False:
+        (x, y, z) = tuple(r*EARTH_GRAVITY_MS2 for r in (x,y,z))
+    return x, y, z
 
 #************************************
 ''' Main initialization routine '''

@@ -1,3 +1,2 @@
-- add accelerometer functions in lib
 - add ADC functions in lib for motors status check
 - update voltage requirements for individual sub-boards  
