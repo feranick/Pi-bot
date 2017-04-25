@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170424c
+* version: 20170425b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -16,7 +16,35 @@ from os.path import exists, splitext
 from os import rename
 from datetime import datetime, date
 import random
+from sklearn.neural_network import MLPClassifier
+from sklearn.externals import joblib
+from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
 
+#***************************************************************
+''' Preprocessing '''
+#***************************************************************
+class preprocDef:
+    StandardScalerFlag = True  # Standardize features by removing the mean and scaling to unit variance (sklearn)
+    if StandardScalerFlag == True:
+        scaler = StandardScaler()
+
+#**********************************************
+''' Neural Networks'''
+#**********************************************
+class nnDef:
+    runNN = True
+    nnAlwaysRetrain = False
+    plotNN = True
+    nnClassReport = False
+    
+    # threshold in % of probabilities for listing prediction results
+    thresholdProbabilityNNPred = 0.001
+    
+    ''' Solver for NN
+        lbfgs preferred for small datasets
+        (alternatives: 'adam' or 'sgd') '''
+    nnSolver = 'lbfgs'
+    nnNeurons = 100  #default = 100
 
 #**********************************************
 ''' Main '''
@@ -34,78 +62,121 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            try:
-                runAuto(sys.argv[2])
-            except:
-                usage()
-                sys.exit(2)
+            #try:
+            runAuto(sys.argv[2])
+            #except:
+            #    usage()
+            #    sys.exit(2)
 
-    if o in ("-t" , "--traintf"):
-        if len(sys.argv) > 3:
-            try:
-                Train(sys.argv[2])
-            except:
-                usage()
-                sys.exit(2)
+        if o in ("-t" , "--train"):
+            #try:
+            runTrain(sys.argv[2])
+            #except:
+            #    usage()
+            #    sys.exit(2)
 
 #************************************
 ''' runAuto '''
 ''' Use ML models to predict steer and power '''
 #************************************
-def runAuto(learnFile):
-    readTrainFile(learnFile)
+def runAuto(trainFile):
+    trainFileRoot = os.path.splitext(trainFile)[0]
+    Cl, sensors = readTrainFile(trainFile)
+    sensors = preProcessData(sensors)
+    nowsensors = sensors[0,:].reshape(1,-1)  # to be changed
+    nowSteer, nowPower = runNN(sensors, Cl, nowsensors, trainFileRoot, False)
+
+
+#************************************
+''' runTrain '''
+''' Use ML models to predict steer and power '''
+#************************************
+def runTrain(trainFile):
+    trainFileRoot = os.path.splitext(trainFile)[0]
+    Cl, sensors = readTrainFile(trainFile)
+    sensors = preProcessData(sensors)
+    nowsensors = sensors[0,:].reshape(1,-1)
+    #print(nowsensors)
+    runNN(sensors, Cl, nowsensors, trainFileRoot, True)
 
 #************************************
 ''' read Train File '''
 #************************************
-def readTrainFile(learnFile):
+def readTrainFile(trainFile):
     try:
-        with open(learnFile, 'r') as f:
+        with open(trainFile, 'r') as f:
             M = np.loadtxt(f, unpack =False)
     except:
         print('\033[1m' + ' Training file not found \n' + '\033[0m')
         return
 
-    En = np.delete(np.array(M[0,:]),np.s_[0:1],0)
-    M = np.delete(M,np.s_[0:1],0)
-    steer = ['{:.2f}'.format(x) for x in M[:,0]]
-    power = ['{:.2f}'.format(x) for x in M[:,0]]
-    A = np.delete(M,np.s_[0:2],1)
-    '''
-    Atemp = A[:,range(len(preprocDef.enSel))]
+    steer = M[:,0]
+    power = M[:,1]
+    Cl = M[:,[0,1]]
+    
+    sensors = np.delete(M,np.s_[0:2],1)
+    print(Cl.shape)
+    print(sensors.shape)
+    return Cl, sensors
 
-    if preprocDef.cherryPickEnPoint == True and preprocDef.enRestrictRegion == False:
-        enPoints = list(preprocDef.enSel)
-        enRange = list(preprocDef.enSel)
-        
-        for i in range(0, len(preprocDef.enSel)):
-            enRange[i] = np.where((En<float(preprocDef.enSel[i]+preprocDef.enSelDelta[i])) & (En>float(preprocDef.enSel[i]-preprocDef.enSelDelta[i])))[0].tolist()
-            
-            for j in range(0, A.shape[0]):
-                Atemp[j,i] = A[j,A[j,enRange[i]].tolist().index(max(A[j, enRange[i]].tolist()))+enRange[i][0]]
-            
-            enPoints[i] = int(np.average(enRange[i]))
-        A = Atemp
-        En = En[enPoints]
-        
-        if type == 0:
-            print( ' Cheery picking points in the spectra\n')
+#**********************************************************************************
+''' Preprocess Learning data '''
+#**********************************************************************************
+def preProcessData(sensors):
+    if preprocDef.StandardScalerFlag == True:
+        print('  Using StandardScaler from sklearn ')
+        sensors = preprocDef.scaler.fit_transform(sensors)
+    return sensors
 
-    # Find index corresponding to energy value to be used for Y normalization
-    if preprocDef.fullYnorm == True:
-        YnormXind = np.where(En>0)[0].tolist()
-    else:
-        YnormXind_temp = np.where((En<float(preprocDef.YnormX+preprocDef.YnormXdelta)) & (En>float(preprocDef.YnormX-preprocDef.YnormXdelta)))[0].tolist()
-        if YnormXind_temp == []:
-            print( ' Renormalization region out of requested range. Normalizing over full range...\n')
-            YnormXind = np.where(En>0)[0].tolist()
+#********************************************************************************
+''' Run Neural Network '''
+#********************************************************************************
+def runNN(sensors, Cl, nowsensors, Root, trainMode):
+    nnTrainedData = Root + '.nnModel.pkl'
+    print('==========================================================================\n')
+    print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + nnDef.nnSolver + ')...')
+    
+    Y = MultiLabelBinarizer().fit(Cl)
+    print(Y)
+    
+    if trainMode is True:
+        nnDef.nnAlwaysRetrain = True
+    try:
+        if nnDef.nnAlwaysRetrain == False:
+            with open(nnTrainedData):
+                print(' Opening NN training model...\n')
+                clf = joblib.load(nnTrainedData)
         else:
-            YnormXind = YnormXind_temp
+            raise ValueError('Force NN retraining.')
+    except:
+        #**********************************************
+        ''' Retrain data if not available'''
+        #**********************************************
+        print(' Retraining NN model...')
+        clf = MLPClassifier(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
+        clf.fit(sensors, Y)
+        joblib.dump(clf, nnTrainedData)
 
-    print(' Number of datapoints = ' + str(A.shape[0]))
-    print(' Size of each datapoint = ' + str(A.shape[1]) + '\n')
-    return En, Cl, A, YnormXind
-    '''
+    if trainMode is False:
+        prob = clf.predict_proba(nowsensors)[0].tolist()
+        #rosterPred = np.where(clf.predict_proba(nowsensors)[0]>nnDef.thresholdProbabilityNNPred/100)[0]
+
+        print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(Y.inverse_transform(clf.predict(nowsensors))[0]) +
+              ' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
+    
+        #return clf.predict(nowsensors)[0], round(100*max(prob),4)
+        return Y.inverse_transform(clf.predict(nowsensors))[0][0], Y.inverse_transform(clf.predict(nowsensors))[0][1]
+
+    else:
+        return
+
+
+#************************************
+''' Lists the program usage '''
+#************************************
+def usage():
+    print('\n Usage:\n')
+    print(' Requires python 3.x. Not compatible with python 2.x\n')
 
 #************************************
 ''' Main initialization routine '''
