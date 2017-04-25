@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - test Sonars
-* version: 20170424a
+* version: 20170424b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -31,10 +31,8 @@ def main():
     
     while True:
         try:
-            distances = readAllSonars(TRIG, ECHO)
+            l,r,c = readAllSonars(TRIG, ECHO)
             print(l,r,c)
-            #obstacleAvoidance3(l,r,c)
-            #obstacleAvoidance2(l,r,c)
         except:
             fullStop()
             return

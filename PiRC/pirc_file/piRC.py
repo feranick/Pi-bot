@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170404a
+* version: 20170424b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -35,9 +35,8 @@ def main():
     
     while True:
         try:
-            l, r, c = irSensors()
-            obstacleAvoidance3(l,r,c)
-            #obstacleAvoidance2(l,r,c)
+            l,r,c = readAllSonars(TRIG, ECHO)
+            obstacleAvoidanceSonars(l,r,c):
             runManualControls()
         except:
             fullStop()
