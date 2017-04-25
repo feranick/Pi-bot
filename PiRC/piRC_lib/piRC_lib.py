@@ -118,7 +118,7 @@ def readAllSonars(TRIG, ECHO):
     distances = pool.map(readEcho, ECHO)
     pool.close()
     pool.join()
-    return distances[0], distances[2], distances[1], distances[3]
+    return distances[0], distances[1], distances[2], distances[3]
 
 def readEcho(ECHO):
     while GPIO.input(ECHO)==0:
@@ -138,17 +138,6 @@ def trigSonar(TRIG):
     sleep(0.00001)
     GPIO.output(TRIG, False)
 
-
-#************************************
-''' Read IR sensors '''
-''' This is obsolete) '''
-#************************************
-def irSensors():
-    l = GPIO.input(IRl)                         #Reading output of right IR sensor
-    r = GPIO.input(IRr)                        #Reading output of left IR sensor
-    c = GPIO.input(IRc)
-    return l, r, c
-
 #************************************
 ''' Read Accelerometer '''
 #************************************
@@ -159,6 +148,24 @@ def readAccel(isG):
     if isG is False:
         (x, y, z) = tuple(r*EARTH_GRAVITY_MS2 for r in (x,y,z))
     return x, y, z
+
+#************************************
+''' Read Status Motors '''
+#************************************
+def statMotors():
+    s = 1
+    p = 1
+    return s, p
+
+#************************************
+''' Read IR sensors '''
+''' This is obsolete) '''
+#************************************
+def irSensors():
+    l = GPIO.input(IRl)                         #Reading output of right IR sensor
+    r = GPIO.input(IRr)                        #Reading output of left IR sensor
+    c = GPIO.input(IRc)
+    return l, r, c
 
 #************************************
 ''' Main initialization routine '''
