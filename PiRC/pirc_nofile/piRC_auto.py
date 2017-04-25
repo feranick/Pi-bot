@@ -31,8 +31,8 @@ def main():
     
     while True:
         try:
-            l,r,c = readAllSonars(TRIG, ECHO)
-            obstacleAvoidanceSonars(l,r,c)
+            l,r,c,b = readAllSonars(TRIG, ECHO)
+            obstacleAvoidanceSonars(l,r,c,b)
         except:
             fullStop()
             return

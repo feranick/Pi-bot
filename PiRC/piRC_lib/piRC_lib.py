@@ -32,7 +32,7 @@ minDistanceB = 10
 ''' to be rewritten after calibration'''
 #************************************
 
-def obstacleAvoidanceSonars(l,r,c):
+def obstacleAvoidanceSonars(l,r,c,b):
     
     if c<minDistanceC:                                  #Center sonar does not detect an object
         if r>minDistanceR and l<minDistanceL:           #Right sonar detects an object
@@ -75,6 +75,9 @@ def obstacleAvoidanceSonars(l,r,c):
         print('All clear (l, r, c):',str(l),str(r),str(c))
         runMotor(0, 0)
 
+    if b<minDistanceB:
+        runMotor(1, 1)
+
 #************************************
 ''' Control Motors'''
 #************************************
@@ -107,12 +110,12 @@ def runMotor(motor, state):
 def readAllSonars(TRIG, ECHO):
     trigSonar(TRIG)
     from multiprocessing.dummy import Pool as ThreadPool
-    pool = ThreadPool(3)
+    pool = ThreadPool(len(ECHO))
     distances = pool.map(readEcho, ECHO)
     pool.close()
     pool.join()
     
-    return distances[0], distances[2], distances[1],
+    return distances[0], distances[2], distances[1], distances[3]
 
 def readEcho(ECHO):
     while GPIO.input(ECHO)==0:

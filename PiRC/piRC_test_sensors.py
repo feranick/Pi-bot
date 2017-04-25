@@ -31,8 +31,8 @@ def main():
     
     while True:
         try:
-            l,r,c = readAllSonars(TRIG, ECHO)
-            print(l,r,c)
+            l,r,c,b = readAllSonars(TRIG, ECHO)
+            print(' L={0}, C={1}, R={2}, B={3}'.format(l,r,c,b))
         except:
             fullStop()
             return
