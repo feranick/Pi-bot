@@ -40,6 +40,7 @@ def main():
             runManualControls()
         except:
             fullStop()
+            GPIO.cleanup()
             return
 
 #************************************

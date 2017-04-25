@@ -35,6 +35,7 @@ def main():
             obstacleAvoidanceSonars(l,r,c,b)
         except:
             fullStop()
+            GPIO.cleanup()
             return
 
 #************************************

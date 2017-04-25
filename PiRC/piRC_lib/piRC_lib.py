@@ -118,7 +118,6 @@ def readAllSonars(TRIG, ECHO):
     distances = pool.map(readEcho, ECHO)
     pool.close()
     pool.join()
-    GPIO.cleanup()
     return distances[0], distances[2], distances[1], distances[3]
 
 def readEcho(ECHO):
