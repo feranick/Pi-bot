@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170424b
+* version: 20170424c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -15,7 +15,8 @@ from piRC_gpio import *
 from time import sleep, time
 import sys
 import random as rd
-import Adafruit_ADXL345
+import Adafruit_ADXL345  # Accelerometer ADXL345
+import Adafruit_ADS1x15  # ADC ADS1115
 
 SCALE_MULTIPLIER = 0.004
 EARTH_GRAVITY_MS2  = 9.80665
@@ -153,8 +154,10 @@ def readAccel(isG):
 ''' Read Status Motors '''
 #************************************
 def statMotors():
-    s = 1
-    p = 1
+    adc = Adafruit_ADS1x15.ADS1115(address=0x48,busnum=1)
+    GAIN = 1
+    s = adc.read_adc(0, gain=GAIN, data_rate=128)
+    p = adc.read_adc(1, gain=GAIN, data_rate=128)
     return s, p
 
 #************************************
