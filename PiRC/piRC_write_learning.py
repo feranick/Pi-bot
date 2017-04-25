@@ -33,8 +33,8 @@ def main():
     
     filename = 'Training_lrcbxyzsp_' + str(datetime.now().strftime('_%Y-%m-%d_%H-%M-%S.txt'))
     
-        while True:
-            try:
+    while True:
+        try:
             l,r,c,b = readAllSonars(TRIG, ECHO)
             x,y,z = readAccel(True)
             s, p = statMotors()

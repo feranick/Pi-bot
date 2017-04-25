@@ -56,7 +56,7 @@ def obstacleAvoidanceSonars(l,r,c,b):
             runMotor(0,1)
             runMotor(1, 1)
     
-        elif:
+        else:
             if r>minDistanceR and l>minDistanceL:
                 print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
                 #runMotor(0,0)
