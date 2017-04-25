@@ -7,10 +7,11 @@ Hardware
 =========
 - robot: RC car with one motor for power, one motor for steering.
 - controller: Raspberry PI zero w
-- ADC controller: 4 channel 16bit (ADS1115)
-- Accelerometer: XYZ (ADXL345)
-- Stepper motor controller: Adafruit TB6612, 1.2A DC
-- Sonars: 3 HC-SR04 (left, right, center)
+- ADC controller: 4 channel 16bit, ADS1115 (Op. Voltage: 3.3V)
+- Accelerometer: XYZ, ADXL345 (Op. Voltage: 3.3V)
+- Stepper motor controller: Adafruit TB6612, 1.2A DC (Op. Voltage: 3.3V or 5V)
+- Sonars: 3 HC-SR04 (left, right, center, back); (Op. Voltage: 5V)
+  Warning: the output operating voltage is 5V, while RPi accepts only up to 3.3V, so you need a voltage divider. 
 
 - Deprecated IR sensors:
     - 2 front left side break beam sensors 3mm LEDs (https://www.adafruit.com/products/2167)

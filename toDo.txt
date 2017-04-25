@@ -1,2 +1,2 @@
 - add ADC functions in lib for motors status check
-- update voltage requirements for individual sub-boards  
+- write functions for data collection (ML training file)
