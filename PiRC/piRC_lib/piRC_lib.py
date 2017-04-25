@@ -21,8 +21,10 @@ timeTransient0 = 0.05
 timeTransient1 = 0.2
 timeTransient2 = 0.75
 timeTransient3 = 1
-minDistance = 15
-
+minDistanceL = 15
+minDistanceR = 15
+minDistanceC = 15
+minDistanceB = 10
 
 #************************************
 ''' Obstacle Avoidance '''
@@ -32,8 +34,8 @@ minDistance = 15
 
 def obstacleAvoidanceSonars(l,r,c):
     
-    if c<15:                                          #Center sonar does not detect an object
-        if r>minDistance and l<minDistance:           #Right sonar detects an object
+    if c<minDistanceC:                                  #Center sonar does not detect an object
+        if r>minDistanceR and l<minDistanceL:           #Right sonar detects an object
             print('Obstacle detected on Left (l, r, c):',str(l),str(r),str(c))
             runMotor(0, 1)
             runMotor(1, -1)
@@ -41,7 +43,7 @@ def obstacleAvoidanceSonars(l,r,c):
             runMotor(0,-1)
             runMotor(1, 1)
         
-        elif r<minDistance and l>minDistance:         #Left sonar detects an object
+        elif r<minDistanceR and l>minDistanceL:         #Left sonar detects an object
             print('Obstacle detected on Right (l, r, c):',str(l),str(r),str(c))
             runMotor(0, -1)
             runMotor(1, -1)
@@ -50,12 +52,12 @@ def obstacleAvoidanceSonars(l,r,c):
             runMotor(1, 1)
     
         elif:
-            if r>minDistance and l>minDistance:
+            if r>minDistanceR and l>minDistanceL:
                 print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
                 #runMotor(0,0)
                 #runMotor(1, -1)
                 sleep(timeTransient1)
-            if r<minDistance and l<minDistance:
+            if r<minDistanceR and l<minDistanceL:
                 print('Surrounded by obstacles - BRAKE! (l, r, c):',str(l),str(r),str(c))
                 runMotor(0,0)
                 runMotor(1, -1)
