@@ -10,6 +10,7 @@ Hardware
 - ADC controller: 4 channel 16bit, ADS1115 (Op. Voltage: 3.3V)
 - Accelerometer: XYZ, ADXL345 (Op. Voltage: 3.3V)
 - Stepper motor controller: Adafruit TB6612, 1.2A DC (Op. Voltage: 3.3V or 5V)
+- Sensing the motor status requires a 1.5MOhm resistor to from the power motor leads to the ADS1115. 
 - Sonars: 3 HC-SR04 (left, right, center, back); (Op. Voltage: 5V)
   Warning: the output operating voltage is 5V, while RPi accepts only up to 3.3V, so you need a voltage divider. 
 
