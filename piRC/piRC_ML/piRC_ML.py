@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170425c
+* version: 20170425d
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -14,6 +14,7 @@ print(__doc__)
 
 import numpy as np
 import sys, os.path, getopt, glob, csv
+from time import sleep, time
 from os.path import exists, splitext
 from os import rename
 from datetime import datetime, date
@@ -21,14 +22,6 @@ import random
 from sklearn.neural_network import MLPClassifier
 from sklearn.externals import joblib
 from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
-
-#***************************************************************
-''' Preprocessing '''
-#***************************************************************
-class preprocDef:
-    StandardScalerFlag = True  # Standardize features by removing the mean and scaling to unit variance (sklearn)
-    if StandardScalerFlag == True:
-        scaler = StandardScaler()
 
 #**********************************************
 ''' Neural Networks'''
@@ -84,9 +77,9 @@ def main():
 def runAuto(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
-    sensors = preProcessData(sensors)
     nowsensors = sensors[0,:].reshape(1,-1)  # to be changed
-    nowSteer, nowPower = runNN(sensors, Cl, nowsensors, trainFileRoot, False)
+    print(nowsensors.shape)
+    nowSteer, nowPower = runNN(sensors, Cl, trainFileRoot, False)
 
 
 #************************************
@@ -96,10 +89,7 @@ def runAuto(trainFile):
 def runTrain(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
-    sensors = preProcessData(sensors)
-    nowsensors = sensors[0,:].reshape(1,-1)
-    #print(nowsensors)
-    runNN(sensors, Cl, nowsensors, trainFileRoot, True)
+    runNN(sensors, Cl, trainFileRoot, True)
 
 #************************************
 ''' read Train File '''
@@ -119,22 +109,16 @@ def readTrainFile(trainFile):
     sensors = np.delete(M,np.s_[0:2],1)
     return Cl, sensors
 
-#**********************************************************************************
-''' Preprocess Learning data '''
-#**********************************************************************************
-def preProcessData(sensors):
-    if preprocDef.StandardScalerFlag == True:
-        print(' Using StandardScaler from sklearn ')
-        sensors = preprocDef.scaler.fit_transform(sensors)
-    return sensors
-
 #********************************************************************************
 ''' Run Neural Network '''
 #********************************************************************************
-def runNN(sensors, Cl, nowsensors, Root, trainMode):
+def runNN(sensors, Cl, Root, trainMode):
     nnTrainedData = Root + '.nnModel.pkl'
     print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + nnDef.nnSolver + ')...')
     
+    scaler = StandardScaler()
+    sensors = scaler.fit_transform(sensors)
+
     Y1 = MultiLabelBinarizer().fit(Cl)
     Y = MultiLabelBinarizer().fit_transform(Cl)
     
@@ -157,15 +141,19 @@ def runNN(sensors, Cl, nowsensors, Root, trainMode):
         joblib.dump(clf, nnTrainedData)
 
     if trainMode is False:
-        prob = clf.predict_proba(nowsensors)[0].tolist()
-        #rosterPred = np.where(clf.predict_proba(nowsensors)[0]>nnDef.thresholdProbabilityNNPred/100)[0]
-
-        print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(Y1.inverse_transform(clf.predict(nowsensors))[0]) +
-              ' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
     
-        #return clf.predict(nowsensors)[0], round(100*max(prob),4)
-        return Y1.inverse_transform(clf.predict(nowsensors))[0][0], Y1.inverse_transform(clf.predict(nowsensors))[0][1]
+        while True:
+            nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
+            #nowsensors = np.array([[1.10,1.10,1.10,1.10,0.068,0.204,0.924]]).reshape(1,-1)
+            #nowsensors = np.array([[1.10,1.10,1.10,1.10,0.1,0.1,0.89]]).reshape(1,-1)
 
+            nowsensors = scaler.transform(nowsensors)
+            print(nowsensors)
+
+            print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(Y1.inverse_transform(clf.predict(nowsensors))[0]))
+            #prob = clf.predict_proba(nowsensors)[0].tolist()
+            #print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
+            sleep(0.1)
     else:
         return
 
