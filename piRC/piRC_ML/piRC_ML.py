@@ -4,12 +4,14 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170425b
+* version: 20170425c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
 ***********************************************************
 '''
+print(__doc__)
+
 import numpy as np
 import sys, os.path, getopt, glob, csv
 from os.path import exists, splitext
@@ -115,8 +117,6 @@ def readTrainFile(trainFile):
     Cl = M[:,[0,1]]
     
     sensors = np.delete(M,np.s_[0:2],1)
-    print(Cl.shape)
-    print(sensors.shape)
     return Cl, sensors
 
 #**********************************************************************************
@@ -124,7 +124,7 @@ def readTrainFile(trainFile):
 #**********************************************************************************
 def preProcessData(sensors):
     if preprocDef.StandardScalerFlag == True:
-        print('  Using StandardScaler from sklearn ')
+        print(' Using StandardScaler from sklearn ')
         sensors = preprocDef.scaler.fit_transform(sensors)
     return sensors
 
@@ -133,11 +133,10 @@ def preProcessData(sensors):
 #********************************************************************************
 def runNN(sensors, Cl, nowsensors, Root, trainMode):
     nnTrainedData = Root + '.nnModel.pkl'
-    print('==========================================================================\n')
     print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + nnDef.nnSolver + ')...')
     
-    Y = MultiLabelBinarizer().fit(Cl)
-    print(Y)
+    Y1 = MultiLabelBinarizer().fit(Cl)
+    Y = MultiLabelBinarizer().fit_transform(Cl)
     
     if trainMode is True:
         nnDef.nnAlwaysRetrain = True
@@ -161,11 +160,11 @@ def runNN(sensors, Cl, nowsensors, Root, trainMode):
         prob = clf.predict_proba(nowsensors)[0].tolist()
         #rosterPred = np.where(clf.predict_proba(nowsensors)[0]>nnDef.thresholdProbabilityNNPred/100)[0]
 
-        print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(Y.inverse_transform(clf.predict(nowsensors))[0]) +
+        print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(Y1.inverse_transform(clf.predict(nowsensors))[0]) +
               ' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
     
         #return clf.predict(nowsensors)[0], round(100*max(prob),4)
-        return Y.inverse_transform(clf.predict(nowsensors))[0][0], Y.inverse_transform(clf.predict(nowsensors))[0][1]
+        return Y1.inverse_transform(clf.predict(nowsensors))[0][0], Y1.inverse_transform(clf.predict(nowsensors))[0][1]
 
     else:
         return
