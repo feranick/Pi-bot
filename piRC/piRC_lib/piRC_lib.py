@@ -161,6 +161,14 @@ def statMotors():
     return s, p
 
 #************************************
+''' Full Stop '''
+#************************************
+def fullStop():
+    print('\nFULL STOP\n')
+    runMotor(0,0)
+    runMotor(1,0)
+
+#************************************
 ''' Read IR sensors '''
 ''' This is obsolete) '''
 #************************************

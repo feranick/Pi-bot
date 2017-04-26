@@ -48,14 +48,6 @@ def main():
             return
 
 #************************************
-''' Full Stop '''
-#************************************
-def fullStop():
-    print('\nFULL STOP\n')
-    runMotor(0,0)
-    runMotor(1,0)
-
-#************************************
 ''' Main initialization routine '''
 #************************************
 if __name__ == "__main__":

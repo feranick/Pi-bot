@@ -18,7 +18,10 @@ from time import sleep, time
 from os.path import exists, splitext
 from os import rename
 from datetime import datetime, date
-import random
+
+import piRC_gpio
+from piRC_lib import *
+
 from sklearn.neural_network import MLPClassifier
 from sklearn.externals import joblib
 from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
@@ -57,18 +60,20 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            #try:
-            runAuto(sys.argv[2])
-            #except:
-            #    usage()
-            #    sys.exit(2)
+            try:
+                runAuto(sys.argv[2])
+            except:
+                fullStop()
+                GPIO.cleanup()
+                sys.exit(2)
 
         if o in ("-t" , "--train"):
-            #try:
-            runTrain(sys.argv[2])
-            #except:
-            #    usage()
-            #    sys.exit(2)
+            try:
+                runTrain(sys.argv[2])
+            except:
+                fullStop()
+                GPIO.cleanup()
+                sys.exit(2)
 
 #************************************
 ''' runAuto '''
@@ -77,10 +82,7 @@ def main():
 def runAuto(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
-    nowsensors = sensors[0,:].reshape(1,-1)  # to be changed
-    print(nowsensors.shape)
-    nowSteer, nowPower = runNN(sensors, Cl, trainFileRoot, False)
-
+    runNN(sensors, Cl, trainFileRoot, False)
 
 #************************************
 ''' runTrain '''
@@ -143,17 +145,20 @@ def runNN(sensors, Cl, Root, trainMode):
     if trainMode is False:
     
         while True:
-            #l,r,c,b = readAllSonars(TRIG, ECHO)
-            #x,y,z = readAccel(True)
-            #nowsensors = np.array(['{:0.2f}'.format(x) for x in [l,r,c,b,x,y,z]]).reshape(1,-1)
+            try:
+                #l,r,c,b = readAllSonars(TRIG, ECHO)
+                #x,y,z = readAccel(True)
+                #nowsensors = np.array(['{:0.2f}'.format(x) for x in [l,r,c,b,x,y,z]]).reshape(1,-1)
             
-            nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
-            nowsensors = scaler.transform(nowsensors)
+                nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
+                nowsensors = scaler.transform(nowsensors)
 
-            print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(Y1.inverse_transform(clf.predict(nowsensors))[0]))
-            prob = clf.predict_proba(nowsensors)[0].tolist()
-            print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
-            sleep(0.1)
+                print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(Y1.inverse_transform(clf.predict(nowsensors))[0]))
+                prob = clf.predict_proba(nowsensors)[0].tolist()
+                print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
+                sleep(0.1)
+            except:
+                return
     else:
         return
 
