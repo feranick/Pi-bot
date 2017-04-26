@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170426a
+* version: 20170426b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -122,6 +122,8 @@ def readAllSonars(TRIG, ECHO):
     return distances[0], distances[1], distances[2], distances[3]
 
 def readEcho(ECHO):
+    pulse_start = 0.0
+    pulse_end = 0.0
     while GPIO.input(ECHO)==0:
         pulse_start = time()
     while GPIO.input(ECHO)==1:
@@ -129,14 +131,13 @@ def readEcho(ECHO):
     pulse_duration = pulse_end - pulse_start
     distance = pulse_duration * 17150
     distance = round(distance, 2)
-    #print("Distance:",distance,"cm")
     return distance
 
 def trigSonar(TRIG):
     GPIO.output(TRIG, False)
-    sleep(0.0001)
+    sleep(0.001)
     GPIO.output(TRIG, True)
-    sleep(0.00001)
+    sleep(0.0002)
     GPIO.output(TRIG, False)
 
 #************************************
