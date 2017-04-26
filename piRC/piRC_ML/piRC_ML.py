@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170425d
+* version: 20170425e
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -143,16 +143,16 @@ def runNN(sensors, Cl, Root, trainMode):
     if trainMode is False:
     
         while True:
+            #l,r,c,b = readAllSonars(TRIG, ECHO)
+            #x,y,z = readAccel(True)
+            #nowsensors = np.array(['{:0.2f}'.format(x) for x in [l,r,c,b,x,y,z]]).reshape(1,-1)
+            
             nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
-            #nowsensors = np.array([[1.10,1.10,1.10,1.10,0.068,0.204,0.924]]).reshape(1,-1)
-            #nowsensors = np.array([[1.10,1.10,1.10,1.10,0.1,0.1,0.89]]).reshape(1,-1)
-
             nowsensors = scaler.transform(nowsensors)
-            print(nowsensors)
 
             print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(Y1.inverse_transform(clf.predict(nowsensors))[0]))
-            #prob = clf.predict_proba(nowsensors)[0].tolist()
-            #print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
+            prob = clf.predict_proba(nowsensors)[0].tolist()
+            print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
             sleep(0.1)
     else:
         return
