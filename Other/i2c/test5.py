@@ -43,7 +43,24 @@ while True:
     for i in range(4):
         # Read the specified ADC channel using the previously set gain value.
         values[i] = factor*adc.read_adc(i, gain=GAIN, data_rate=128)
-        # Note you can also pass in an optional data_rate parameter that controls
+
+    s1 = values[0]-values[1]
+    p1 = values[2]-values[3]
+    if s1 > 2:
+        s = 1
+    elif s1<-2:
+        s = -1
+    else:
+        s = 0
+    if p1 > 2:
+        p = 1
+    elif p1<-2:
+        p = -1
+    else:
+        p = 0
+
+
+	# Note you can also pass in an optional data_rate parameter that controls
         # the ADC conversion time (in samples/second). Each chip has a different
         # set of allowed data rate values, see datasheet Table 9 config register
         # DR bit values.
@@ -51,6 +68,7 @@ while True:
         # Each value will be a 12 or 16 bit signed integer value depending on the
         # ADC (ADS1015 = 12-bit, ADS1115 = 16-bit).
     # Print the ADC values.
-    print('| {0:.2f} | {1:.2f} | {2:.2f} | {3:.2f} |'.format(*values))
+    #print('| {0:.2f} | {1:.2f} | {2:.2f} | {3:.2f} |'.format(*values))
+    print('| {0:.2f} | {1:.2f} |'.format(s,p))
     # Pause for half a second.
     time.sleep(0.5)
