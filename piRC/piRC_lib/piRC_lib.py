@@ -113,7 +113,6 @@ def runMotor(motor, state):
 ''' Read sonars '''
 #************************************
 def readAllSonars(TRIG, ECHO):
-    trigSonar(TRIG)
     from multiprocessing.dummy import Pool as ThreadPool
     pool = ThreadPool(len(ECHO))
     distances = pool.starmap(readSonar, zip(TRIG,ECHO))
