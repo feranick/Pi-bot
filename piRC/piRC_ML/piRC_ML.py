@@ -19,8 +19,8 @@ from os.path import exists, splitext
 from os import rename
 from datetime import datetime, date
 
-#import piRC_gpio
-#from piRC_lib import *
+import piRC_gpio
+from piRC_lib import *
 
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.externals import joblib
@@ -72,16 +72,16 @@ def main():
             try:
                 runAuto(sys.argv[2])
             except:
-                #fullStop()
-                #GPIO.cleanup()
+                fullStop()
+                GPIO.cleanup()
                 sys.exit(2)
 
         if o in ("-t" , "--train"):
             try:
                 runTrain(sys.argv[2])
             except:
-                #fullStop()
-                #GPIO.cleanup()
+                fullStop()
+                GPIO.cleanup()
                 sys.exit(2)
 
 #************************************
