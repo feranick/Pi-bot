@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_gpio library
-* version: 20170424b
+* version: 20170427b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -17,8 +17,8 @@ import RPi.GPIO as GPIO
 #IRr = 5
 #IRc = 7
 
-TRIG = 29
-ECHO = [31,33,35,37]
+TRIG = [29,31,35,38]
+ECHO = [32,33,37,40]
 
 AIN1 = 11
 AIN2 = 13
@@ -34,8 +34,8 @@ GPIO.setmode(GPIO.BOARD)
 #GPIO.setup(IRr, GPIO.IN) # Left sensor connection
 #GPIO.setup(IRc, GPIO.IN) # Center sensor connection
 
-GPIO.setup(TRIG,GPIO.OUT)
 for i in range(len(ECHO)):
+    GPIO.setup(TRIG[i],GPIO.OUT)
     GPIO.setup(ECHO[i],GPIO.IN)
 
 #these need to be fixed for TB6612
