@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170427c
+* version: 20170427e
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -19,8 +19,8 @@ from os.path import exists, splitext
 from os import rename
 from datetime import datetime, date
 
-#import piRC_gpio
-#from piRC_lib import *
+import piRC_gpio
+from piRC_lib import *
 
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.externals import joblib
@@ -32,6 +32,8 @@ from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
 class params:
     timeDelay = 0.25
     saveNewTrainingData = False
+
+    filename = 'Training_splrcbxyz.txt'
 
 #**********************************************
 ''' Neural Networks'''
@@ -55,8 +57,11 @@ class nnDef:
 ''' Main '''
 #**********************************************
 def main():
+    #make sure motors are stopped
+    fullStop()
+    
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "rth:", ["run", "train", "help"])
+        opts, args = getopt.getopt(sys.argv[1:], "rtch:", ["run", "train", "collect", "help"])
     except:
         usage()
         sys.exit(2)
@@ -79,16 +84,24 @@ def main():
             try:
                 runAuto(sys.argv[2])
             except:
-                #fullStop()
-                #GPIO.cleanup()
+                fullStop()
+                GPIO.cleanup()
                 sys.exit(2)
 
         if o in ("-t" , "--train"):
             try:
                 runTrain(sys.argv[2])
             except:
-                #fullStop()
-                #GPIO.cleanup()
+                fullStop()
+                GPIO.cleanup()
+                sys.exit(2)
+
+        if o in ("-c" , "--collect"):
+            try:
+                writeTrainFile()
+            except:
+                fullStop()
+                GPIO.cleanup()
                 sys.exit(2)
 
 #************************************
@@ -108,6 +121,18 @@ def runTrain(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     runNN(sensors, Cl, trainFileRoot, True)
+
+#************************************
+''' write training file from sensors '''
+#************************************
+def writeTrainFile():
+    while True:
+        l,r,c,b = readAllSonars(TRIG, ECHO)
+        x,y,z = readAccel(True)
+        s,p = statMotors()
+        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
+        with open(params.filename, "a") as sum_file:
+            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(s,p,l,r,c,b,x,y,z))
 
 #************************************
 ''' read Train File '''
@@ -194,10 +219,9 @@ def runNN(sensors, Cl, Root, trainMode):
                 #runMotor(1,sp[1])
                 sleep(params.timeDelay)
         
-                if saveNewTrainingData is True:
-                    with open(filename, "a") as sum_file:
-                    sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z))
-        
+                if params.saveNewTrainingData is True:
+                    with open(params.filename, "a") as sum_file:
+                        sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z))
             except:
                 return
     else:
@@ -208,10 +232,11 @@ def runNN(sensors, Cl, Root, trainMode):
 #************************************
 def usage():
     print('\n Usage:')
-    print('\n Trainining only (Classifier):\n  python3 piRC_ML.py -t <train file>')
+    print('\n Training only (Classifier):\n  python3 piRC_ML.py -t <train file>')
     print('\n Prediction only (Classifier):\n  python3 piRC_ML.py -r <train file>')
-    print('\n Trainining only (Regression):\n  python3 piRC_ML.py -t <train file> -R')
-    print('\n Trainining only (Regression):\n  python3 piRC_ML.py -t <train file> -R')
+    print('\n Training only (Regression):\n  python3 piRC_ML.py -t <train file> -R')
+    print('\n Training only (Regression):\n  python3 piRC_ML.py -t <train file> -R')
+    print('\n Collect data from sensors into training file:\n  python3 piRC_ML.py -c')
     print('\n (Separate trained models are created for regression and classification\n')
 
     print(' Requires python 3.x. Not compatible with python 2.x\n')

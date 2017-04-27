@@ -4,6 +4,7 @@
 **********************************************************
 *
 * PiRC - write training file from sensors
+* (This will be soon integrated with the main ML program)
 * version: 20170426c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
