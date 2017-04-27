@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170426f
+* version: 20170426g
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -19,8 +19,8 @@ from os.path import exists, splitext
 from os import rename
 from datetime import datetime, date
 
-import piRC_gpio
-from piRC_lib import *
+#import piRC_gpio
+#from piRC_lib import *
 
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.externals import joblib
@@ -72,16 +72,16 @@ def main():
             try:
                 runAuto(sys.argv[2])
             except:
-                fullStop()
-                GPIO.cleanup()
+                #fullStop()
+                #GPIO.cleanup()
                 sys.exit(2)
 
         if o in ("-t" , "--train"):
             try:
                 runTrain(sys.argv[2])
             except:
-                fullStop()
-                GPIO.cleanup()
+                #fullStop()
+                #GPIO.cleanup()
                 sys.exit(2)
 
 #************************************
@@ -169,15 +169,17 @@ def runNN(sensors, Cl, Root, trainMode):
             
                 nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
                 nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
+                
                 if nnDef.regressor is False:
                     nowsensors = scaler.transform(nowsensors)
-                    print('\033[1m' + '\n Predicted classification value (Neural Networks) = ' + str(binarizer.inverse_transform(clf.predict(nowsensors))[0]))
+                    
+                    sp = binarizer.inverse_transform(clf.predict(nowsensors))[0]
+                    print('\033[1m' + '\n Predicted classification value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
                     prob = clf.predict_proba(nowsensors)[0].tolist()
                     print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
                 else:
-                    s = clf.predict(nowsensors)[0][0]
-                    p = clf.predict(nowsensors)[0][1]
-                    print('\033[1m' + '\n Predicted regression value (Neural Networks) = (',str(round(s)),',',str(round(p)),')')
+                    sp = clf.predict(nowsensors)[0]
+                    print('\033[1m' + '\n Predicted regression value (Neural Networks) = (',str(round(sp[0])),',',str(round(sp[1])),')')
                 sleep(0.1)
             except:
                 return
