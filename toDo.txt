@@ -1,2 +1,1 @@
-- add ADC functions in lib for motors status check
-- write functions for data collection (ML training file)
+- don’t just use ML data acquired during runAuto, but store it for training. 
