@@ -31,6 +31,8 @@ minDistanceR = 15
 minDistanceC = 15
 minDistanceB = 10
 
+filename = 'Training_splrcbxyz.txt'
+
 #************************************
 ''' Obstacle Avoidance '''
 ''' ONLY FOR SONARS '''
