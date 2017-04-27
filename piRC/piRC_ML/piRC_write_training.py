@@ -18,11 +18,11 @@ sys.path.append('piRC_lib')
 
 import piRC_gpio
 from piRC_lib import *
+from piRC_ML import *
 
 from time import sleep
 from datetime import datetime, date
 import random as rd
-
 
 #************************************
 ''' Main initialization routine '''
