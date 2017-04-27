@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170426b
+* version: 20170427c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -116,14 +116,21 @@ def readAllSonars(TRIG, ECHO):
     trigSonar(TRIG)
     from multiprocessing.dummy import Pool as ThreadPool
     pool = ThreadPool(len(ECHO))
-    distances = pool.map(readEcho, ECHO)
+    distances = pool.starmap(readSonar, zip(TRIG,ECHO))
     pool.close()
     pool.join()
     return distances[0], distances[1], distances[2], distances[3]
 
-def readEcho(ECHO):
+def readSonar(TRIG,ECHO):
     pulse_start = 0.0
     pulse_end = 0.0
+    
+    GPIO.output(TRIG, False)
+    sleep(0.001)
+    GPIO.output(TRIG, True)
+    sleep(0.0002)
+    GPIO.output(TRIG, False)
+    
     while GPIO.input(ECHO)==0:
         pulse_start = time()
     while GPIO.input(ECHO)==1:
@@ -132,13 +139,6 @@ def readEcho(ECHO):
     distance = pulse_duration * 17150
     distance = round(distance, 2)
     return distance
-
-def trigSonar(TRIG):
-    GPIO.output(TRIG, False)
-    sleep(0.001)
-    GPIO.output(TRIG, True)
-    sleep(0.0002)
-    GPIO.output(TRIG, False)
 
 #************************************
 ''' Read Accelerometer '''
