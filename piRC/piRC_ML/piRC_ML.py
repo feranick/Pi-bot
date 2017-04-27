@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170425f
+* version: 20170426e
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -22,7 +22,7 @@ from datetime import datetime, date
 import piRC_gpio
 from piRC_lib import *
 
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.externals import joblib
 from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
 
@@ -32,9 +32,9 @@ from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
 class nnDef:
     runNN = True
     nnAlwaysRetrain = False
-    plotNN = True
-    nnClassReport = False
     
+    regressor = False
+
     # threshold in % of probabilities for listing prediction results
     thresholdProbabilityNNPred = 0.001
     
@@ -42,7 +42,7 @@ class nnDef:
         lbfgs preferred for small datasets
         (alternatives: 'adam' or 'sgd') '''
     nnSolver = 'lbfgs'
-    nnNeurons = 100  #default = 100
+    nnNeurons = 10  #default = 10
 
 #**********************************************
 ''' Main '''
@@ -115,14 +115,20 @@ def readTrainFile(trainFile):
 ''' Run Neural Network '''
 #********************************************************************************
 def runNN(sensors, Cl, Root, trainMode):
-    nnTrainedData = Root + '.nnModel.pkl'
+    if nnDef.regressor is False:
+        nnTrainedData = Root + '.nnModelC.pkl'
+    else:
+        nnTrainedData = Root + '.nnModelR.pkl'
     print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + nnDef.nnSolver + ')...')
     
     scaler = StandardScaler()
     sensors = scaler.fit_transform(sensors)
-    
-    binarizer = MultiLabelBinarizer()
-    Y = binarizer.fit_transform(Cl)
+
+    if nnDef.regressor is False:
+        binarizer = MultiLabelBinarizer()
+        Y = binarizer.fit_transform(Cl)
+    else:
+        Y = Cl
     
     if trainMode is True:
         nnDef.nnAlwaysRetrain = True
@@ -138,12 +144,14 @@ def runNN(sensors, Cl, Root, trainMode):
         ''' Retrain data if not available'''
         #**********************************************
         print(' Retraining NN model...')
-        clf = MLPClassifier(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
+        if nnDef.regressor is False:
+            clf = MLPClassifier(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
+        else:
+            clf = MLPRegressor(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
         clf.fit(sensors, Y)
         joblib.dump(clf, nnTrainedData)
 
     if trainMode is False:
-    
         while True:
             try:
                 #l,r,c,b = readAllSonars(TRIG, ECHO)
@@ -151,11 +159,13 @@ def runNN(sensors, Cl, Root, trainMode):
                 #nowsensors = np.array(['{:0.2f}'.format(x) for x in [l,r,c,b,x,y,z]]).reshape(1,-1)
             
                 nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
-                nowsensors = scaler.transform(nowsensors)
-
-                print('\033[1m' + '\n Predicted value (Neural Networks) = ' + str(binarizer.inverse_transform(clf.predict(nowsensors))[0]))
-                prob = clf.predict_proba(nowsensors)[0].tolist()
-                print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
+                if nnDef.regressor is False:
+                    nowsensors = scaler.transform(nowsensors)
+                    print('\033[1m' + '\n Predicted classification value (Neural Networks) = ' + str(binarizer.inverse_transform(clf.predict(nowsensors))[0]))
+                    prob = clf.predict_proba(nowsensors)[0].tolist()
+                    print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
+                else:
+                    print('\033[1m' + '\n Predicted regression value (Neural Networks) = ' + str(clf.predict(nowsensors)[0]))
                 sleep(0.1)
             except:
                 return
