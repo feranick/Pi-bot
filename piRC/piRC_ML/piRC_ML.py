@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170426e
+* version: 20170426f
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -57,6 +57,15 @@ def main():
     if opts == []:
         usage()
         sys.exit(2)
+
+    try:
+        sys.argv[3]
+        if sys.argv[3] in ("-C", "--Classifier"):
+            nnDef.regressor = False
+        elif sys.argv[3] in ("-R", "--Regressor"):
+            nnDef.regressor = True
+    except:
+        print('C')
 
     for o, a in opts:
         if o in ("-r" , "--run"):
@@ -159,25 +168,33 @@ def runNN(sensors, Cl, Root, trainMode):
                 #nowsensors = np.array(['{:0.2f}'.format(x) for x in [l,r,c,b,x,y,z]]).reshape(1,-1)
             
                 nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
+                nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
                 if nnDef.regressor is False:
                     nowsensors = scaler.transform(nowsensors)
                     print('\033[1m' + '\n Predicted classification value (Neural Networks) = ' + str(binarizer.inverse_transform(clf.predict(nowsensors))[0]))
                     prob = clf.predict_proba(nowsensors)[0].tolist()
                     print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
                 else:
-                    print('\033[1m' + '\n Predicted regression value (Neural Networks) = ' + str(clf.predict(nowsensors)[0]))
+                    s = clf.predict(nowsensors)[0][0]
+                    p = clf.predict(nowsensors)[0][1]
+                    print('\033[1m' + '\n Predicted regression value (Neural Networks) = (',str(round(s)),',',str(round(p)),')')
                 sleep(0.1)
             except:
                 return
     else:
         return
 
-
 #************************************
 ''' Lists the program usage '''
 #************************************
 def usage():
-    print('\n Usage:\n')
+    print('\n Usage:')
+    print('\n Trainining only (Classifier):\n  python3 piRC_ML.py -t <train file>')
+    print('\n Prediction only (Classifier):\n  python3 piRC_ML.py -r <train file>')
+    print('\n Trainining only (Regression):\n  python3 piRC_ML.py -t <train file> -R')
+    print('\n Trainining only (Regression):\n  python3 piRC_ML.py -t <train file> -R')
+    print('\n (Separate trained models are created for regression and classification\n')
+
     print(' Requires python 3.x. Not compatible with python 2.x\n')
 
 #************************************
