@@ -204,8 +204,11 @@ def runNN(sensors, Cl, Root, trainMode):
                 
                 if nnDef.regressor is False:
                     nowsensors = scaler.transform(nowsensors)
-                    
-                    sp = binarizer.inverse_transform(clf.predict(nowsensors))[0]
+                    try:
+                        sp[0] = binarizer.inverse_transform(clf.predict(nowsensors))[0][0]
+                        sp[1] = binarizer.inverse_transform(clf.predict(nowsensors))[0][1]
+                    except:
+                        sp = [0,0]
                     print('\033[1m' + '\n Predicted classification value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
                     prob = clf.predict_proba(nowsensors)[0].tolist()
                     print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
@@ -232,10 +235,10 @@ def runNN(sensors, Cl, Root, trainMode):
 #************************************
 def usage():
     print('\n Usage:')
-    print('\n Training only (Classifier):\n  python3 piRC_ML.py -t <train file>')
-    print('\n Prediction only (Classifier):\n  python3 piRC_ML.py -r <train file>')
-    print('\n Training only (Regression):\n  python3 piRC_ML.py -t <train file> -R')
-    print('\n Training only (Regression):\n  python3 piRC_ML.py -t <train file> -R')
+    print('\n Training (Classifier):\n  python3 piRC_ML.py -t <train file>')
+    print('\n Prediction (Classifier):\n  python3 piRC_ML.py -r <train file>')
+    print('\n Training (Regression):\n  python3 piRC_ML.py -t <train file> -R')
+    print('\n Prediction (Regression):\n  python3 piRC_ML.py -r <train file> -R')
     print('\n Collect data from sensors into training file:\n  python3 piRC_ML.py -c')
     print('\n (Separate trained models are created for regression and classification\n')
 
