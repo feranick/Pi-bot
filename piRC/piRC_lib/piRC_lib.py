@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170427c
+* version: 20170428b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -159,7 +159,7 @@ def statMotors():
     adc = Adafruit_ADS1x15.ADS1115(address=0x48,busnum=1)
     GAIN = 1
     FACTOR = 5/32000 # using a 1.5MOhm
-    s1 = (adc.read_adc(0, gain=GAIN, data_rate=128)-adc.read_adc(0, gain=GAIN, data_rate=128))*FACTOR
+    s1 = (adc.read_adc(0, gain=GAIN, data_rate=128)-adc.read_adc(1, gain=GAIN, data_rate=128))*FACTOR
     p1 = (adc.read_adc(2, gain=GAIN, data_rate=128)-adc.read_adc(3, gain=GAIN, data_rate=128))*FACTOR
     if s1 > 2:
         s = 1
