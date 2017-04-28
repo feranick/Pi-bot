@@ -8,8 +8,22 @@ import time
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False) 
 
-TRIG = 38 
-ECHO = 40
+# Front sonar
+TRIG = 29
+ECHO = 32
+
+# Left sonar
+#TRIG = 31
+#ECHO = 33
+
+# Right sonar
+#TRIG = 35
+#ECHO = 37
+
+# Back sonar
+#TRIG = 38
+#ECHO = 40
+
 pulse = 0.0002
 
 pulse_start = 0.0
