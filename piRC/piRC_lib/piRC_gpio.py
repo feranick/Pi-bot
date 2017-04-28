@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_gpio library
-* version: 20170427b
+* version: 20170428b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -23,9 +23,9 @@ ECHO = [32,33,37,40]
 AIN1 = 11
 AIN2 = 13
 PWNA = 15
-BIN1 = 19
-BIN2 = 21
-PWNB = 23
+BIN1 = 8
+BIN2 = 10
+PWNB = 12
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
