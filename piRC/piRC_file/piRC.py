@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170424b
+* version: 20170428a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -21,7 +21,7 @@ from piRC_lib import *
 from time import sleep
 import random as rd
 
-webFolder = "/var/www/html/pirc_file/WebServer/"
+webFolder = "/var/www/html/piRC_file/WebServer/"
 steerFile = "steerStatus.txt"
 powerFile = "powerStatus.txt"
 
@@ -36,7 +36,7 @@ def main():
     while True:
         try:
             l,r,c,b = readAllSonars(TRIG, ECHO)
-            obstacleAvoidanceSonars(l,r,c,b):
+            obstacleAvoidanceSonars(l,r,c,b)
             runManualControls()
         except:
             fullStop()
