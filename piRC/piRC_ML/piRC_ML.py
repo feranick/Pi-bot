@@ -84,25 +84,19 @@ def main():
             try:
                 runAuto(sys.argv[2])
             except:
-                fullStop()
-                GPIO.cleanup()
-                sys.exit(2)
+                exitProg()
 
         if o in ("-t" , "--train"):
             try:
                 runTrain(sys.argv[2])
             except:
-                fullStop()
-                GPIO.cleanup()
-                sys.exit(2)
+                exitProg()
 
         if o in ("-c" , "--collect"):
             try:
                 writeTrainFile()
             except:
-                fullStop()
-                GPIO.cleanup()
-                sys.exit(2)
+                exitProg()
 
 #************************************
 ''' runAuto '''
@@ -243,6 +237,11 @@ def usage():
     print('\n (Separate trained models are created for regression and classification\n')
 
     print(' Requires python 3.x. Not compatible with python 2.x\n')
+
+def exitProg():
+    fullStop()
+    GPIO.cleanup()
+    sys.exit(2)
 
 #************************************
 ''' Main initialization routine '''
