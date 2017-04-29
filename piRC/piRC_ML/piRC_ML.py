@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170427e
+* version: 20170428a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -32,6 +32,8 @@ from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
 class params:
     timeDelay = 0.25
     saveNewTrainingData = False
+    
+    debug = False # do not activate sensors or motors in debug mode
 
     filename = 'Training_splrcbxyz.txt'
 
@@ -189,12 +191,15 @@ def runNN(sensors, Cl, Root, trainMode):
     if trainMode is False:
         while True:
             try:
-                #l,r,c,b = readAllSonars(TRIG, ECHO)
-                #x,y,z = readAccel(True)
-                #nowsensors = np.array(['{0:0.0f} {1:0.0f} {2:0.0f} {3:0.0f} {4:0.3f} {5:0.3f} {6:0.3f}'.format(l,r,c,b,x,y,z)]).reshape(1,-1)
+                l,r,c,b = readAllSonars(TRIG, ECHO)
+                x,y,z = readAccel(True)
+                np.set_printoptions(suppress=True)
             
-                nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
-                nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
+                if params.debug is True:
+                    nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
+                    nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
+                else:
+                    nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
                 
                 if nnDef.regressor is False:
                     nowsensors = scaler.transform(nowsensors)
@@ -212,8 +217,9 @@ def runNN(sensors, Cl, Root, trainMode):
                     print('\033[1m' + '\n Predicted regression value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
                     print(' (R^2 = ' + str('{:.5f}'.format(score)) + ')\033[0m')
 
-                #runMotor(0,sp[0])
-                #runMotor(1,sp[1])
+                if params.debug is False:
+                    runMotor(0,sp[0])
+                    runMotor(1,sp[1])
                 sleep(params.timeDelay)
         
                 if params.saveNewTrainingData is True:
