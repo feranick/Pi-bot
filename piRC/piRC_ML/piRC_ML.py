@@ -42,7 +42,7 @@ class params:
 #**********************************************
 class nnDef:
     runNN = True
-    nnAlwaysRetrain = False
+    nnAlwaysRetrain = True
     
     regressor = False
 
