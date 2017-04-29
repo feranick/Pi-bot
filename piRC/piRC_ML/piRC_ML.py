@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170428a
+* version: 20170428c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -212,7 +212,16 @@ def runNN(sensors, Cl, Root, trainMode):
                     prob = clf.predict_proba(nowsensors)[0].tolist()
                     print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
                 else:
-                    sp = [round(f) for f in clf.predict(nowsensors)[0]]
+                    sp = clf.predict(nowsensors)[0]
+                    for k in range(2):
+                        print(sp[k])
+                        if sp[k] >= 1:
+                            sp[k] = 1
+                        elif sp[k] <= -1:
+                            sp[k] = -1
+                        else:
+                            sp[k] = 0
+
                     score = clf.score(sensors,Y)
                     print('\033[1m' + '\n Predicted regression value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
                     print(' (R^2 = ' + str('{:.5f}'.format(score)) + ')\033[0m')
