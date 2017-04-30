@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170428c
+* version: 20170430a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -19,9 +19,6 @@ from os.path import exists, splitext
 from os import rename
 from datetime import datetime, date
 
-import piRC_gpio
-from piRC_lib import *
-
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.externals import joblib
 from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
@@ -32,9 +29,8 @@ from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
 class params:
     timeDelay = 0.25
     saveNewTrainingData = False
-    
-    debug = False # do not activate sensors or motors in debug mode
 
+    debug = False # do not activate sensors or motors in debug mode
     filename = 'Training_splrcbxyz.txt'
 
 #**********************************************
@@ -45,6 +41,8 @@ class nnDef:
     nnAlwaysRetrain = True
     
     regressor = False
+
+    scaler = StandardScaler()
 
     # threshold in % of probabilities for listing prediction results
     thresholdProbabilityNNPred = 0.001
@@ -59,9 +57,6 @@ class nnDef:
 ''' Main '''
 #**********************************************
 def main():
-    #make sure motors are stopped
-    fullStop()
-    
     try:
         opts, args = getopt.getopt(sys.argv[1:], "rtch:", ["run", "train", "collect", "help"])
     except:
@@ -83,16 +78,16 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            try:
-                runAuto(sys.argv[2])
-            except:
-                exitProg()
+            #try:
+            runAuto(sys.argv[2])
+            #except:
+            #    exitProg()
 
         if o in ("-t" , "--train"):
-            try:
-                runTrain(sys.argv[2])
-            except:
-                exitProg()
+            #try:
+            runTrain(sys.argv[2])
+            #except:
+            #    exitProg()
 
         if o in ("-c" , "--collect"):
             try:
@@ -107,7 +102,14 @@ def main():
 def runAuto(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
-    runNN(sensors, Cl, trainFileRoot, False)
+    clf = runNN(sensors, Cl, trainFileRoot)
+    import piRC_gpio, piRC_lib
+    #make sure motors are stopped
+    piRC_lib.fullStop()
+    while True:
+        s, p = predictDrive(clf)
+        drive(s,p)
+        sleep(params.timeDelay)
 
 #************************************
 ''' runTrain '''
@@ -116,16 +118,18 @@ def runAuto(trainFile):
 def runTrain(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
-    runNN(sensors, Cl, trainFileRoot, True)
+    nnDef.nnAlwaysRetrain = True
+    runNN(sensors, Cl, trainFileRoot)
 
-#************************************
+#****************************************
 ''' write training file from sensors '''
-#************************************
+#****************************************
 def writeTrainFile():
+    import piRC_gpio, piRC_lib
     while True:
-        l,r,c,b = readAllSonars(TRIG, ECHO)
-        x,y,z = readAccel(True)
-        s,p = statMotors()
+        l,r,c,b = piRC_lib.readAllSonars(piRC_gpio.TRIG, piRC_gpio.ECHO)
+        x,y,z = piRC_lib.readAccel(True)
+        s,p = piRC_lib.statMotors()
         print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
         with open(params.filename, "a") as sum_file:
             sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(s,p,l,r,c,b,x,y,z))
@@ -151,24 +155,21 @@ def readTrainFile(trainFile):
 #********************************************************************************
 ''' Run Neural Network '''
 #********************************************************************************
-def runNN(sensors, Cl, Root, trainMode):
+def runNN(sensors, Cl, Root):
     if nnDef.regressor is False:
         nnTrainedData = Root + '.nnModelC.pkl'
     else:
         nnTrainedData = Root + '.nnModelR.pkl'
     print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + nnDef.nnSolver + ')...')
     
-    scaler = StandardScaler()
-    sensors = scaler.fit_transform(sensors)
+    sensors = nnDef.scaler.fit_transform(sensors)
 
     if nnDef.regressor is False:
         binarizer = MultiLabelBinarizer()
         Y = binarizer.fit_transform(Cl)
     else:
         Y = Cl
-    
-    if trainMode is True:
-        nnDef.nnAlwaysRetrain = True
+
     try:
         if nnDef.nnAlwaysRetrain == False:
             with open(nnTrainedData):
@@ -180,7 +181,7 @@ def runNN(sensors, Cl, Root, trainMode):
         #**********************************************
         ''' Retrain data if not available'''
         #**********************************************
-        print(' Retraining NN model...')
+        print(' Retraining NN model...\n')
         if nnDef.regressor is False:
             clf = MLPClassifier(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
         else:
@@ -188,56 +189,61 @@ def runNN(sensors, Cl, Root, trainMode):
         clf.fit(sensors, Y)
         joblib.dump(clf, nnTrainedData)
 
-    if trainMode is False:
-        while True:
-            try:
-                l,r,c,b = readAllSonars(TRIG, ECHO)
-                x,y,z = readAccel(True)
-                np.set_printoptions(suppress=True)
+    return clf
+
+#************************************
+''' Predict drive pattern '''
+#************************************
+def predictDrive(clf):
+    import piRC_gpio, piRC_lib
+    l,r,c,b = piRC_lib.readAllSonars(piRC_gpio.TRIG, piRC_gpio.ECHO)
+    x,y,z = piRC_lib.readAccel(True)
+    np.set_printoptions(suppress=True)
             
-                if params.debug is True:
-                    nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
-                    nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
-                else:
-                    nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
-                
-                if nnDef.regressor is False:
-                    nowsensors = scaler.transform(nowsensors)
-                    try:
-                        sp[0] = binarizer.inverse_transform(clf.predict(nowsensors))[0][0]
-                        sp[1] = binarizer.inverse_transform(clf.predict(nowsensors))[0][1]
-                    except:
-                        sp = [0,0]
-                    print('\033[1m' + '\n Predicted classification value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
-                    prob = clf.predict_proba(nowsensors)[0].tolist()
-                    print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
-                else:
-                    sp = clf.predict(nowsensors)[0]
-                    for k in range(2):
-                        print(sp[k])
-                        if sp[k] >= 1:
-                            sp[k] = 1
-                        elif sp[k] <= -1:
-                            sp[k] = -1
-                        else:
-                            sp[k] = 0
-
-                    score = clf.score(sensors,Y)
-                    print('\033[1m' + '\n Predicted regression value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
-                    print(' (R^2 = ' + str('{:.5f}'.format(score)) + ')\033[0m')
-
-                if params.debug is False:
-                    runMotor(0,sp[0])
-                    runMotor(1,sp[1])
-                sleep(params.timeDelay)
-        
-                if params.saveNewTrainingData is True:
-                    with open(params.filename, "a") as sum_file:
-                        sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z))
-            except:
-                return
+    if params.debug is True:
+        nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
+        nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
     else:
-        return
+        nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
+                
+    if nnDef.regressor is False:
+        nowsensors = nnDef.scaler.transform(nowsensors)
+        try:
+            sp[0] = binarizer.inverse_transform(clf.predict(nowsensors))[0][0]
+            sp[1] = binarizer.inverse_transform(clf.predict(nowsensors))[0][1]
+        except:
+            sp = [0,0]
+        print('\033[1m' + '\n Predicted classification value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
+        prob = clf.predict_proba(nowsensors)[0].tolist()
+        print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
+    else:
+        sp = clf.predict(nowsensors)[0]
+        for k in range(2):
+            print(sp[k])
+            if sp[k] >= 1:
+                sp[k] = 1
+            elif sp[k] <= -1:
+                sp[k] = -1
+            else:
+                sp[k] = 0
+
+        score = clf.score(sensors,Y)
+        print('\033[1m' + '\n Predicted regression value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
+        print(' (R^2 = ' + str('{:.5f}'.format(score)) + ')\033[0m')
+        
+    if params.saveNewTrainingData is True:
+        with open(params.filename, "a") as sum_file:
+            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z))
+
+    return sp[0], sp[1]
+
+#************************************
+''' Drive '''
+#************************************
+def drive(s,p):
+    import piRC_gpio, piRC_lib
+    piRC_lib.runMotor(0,s)
+    piRC_lib.runMotor(1,p)
 
 #************************************
 ''' Lists the program usage '''
