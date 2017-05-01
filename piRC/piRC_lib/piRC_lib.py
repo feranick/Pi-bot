@@ -4,19 +4,60 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170428b
+* version: 20170430b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
 ***********************************************************
 '''
 
-from piRC_gpio import *
+import RPi.GPIO as GPIO
 from time import sleep, time
 import sys
 import random as rd
 import Adafruit_ADXL345  # Accelerometer ADXL345
 import Adafruit_ADS1x15  # ADC ADS1115
+
+#************************************
+''' GPIO definitions '''
+#************************************
+
+#IRl = 3
+#IRr = 5
+#IRc = 7
+
+TRIG = [29,31,35,38]
+ECHO = [32,33,37,40]
+
+AIN1 = 11
+AIN2 = 13
+PWNA = 15
+BIN1 = 8
+BIN2 = 10
+PWNB = 12
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+
+#GPIO.setup(IRl, GPIO.IN) # Right sensor connection
+#GPIO.setup(IRr, GPIO.IN) # Left sensor connection
+#GPIO.setup(IRc, GPIO.IN) # Center sensor connection
+
+for i in range(len(ECHO)):
+    GPIO.setup(TRIG[i],GPIO.OUT)
+    GPIO.setup(ECHO[i],GPIO.IN)
+
+#these need to be fixed for TB6612
+GPIO.setup(AIN1,GPIO.OUT)   #AIN1 motor input A
+GPIO.setup(AIN2,GPIO.OUT)   #AIN2 motor input B
+GPIO.setup(PWNA,GPIO.OUT)   #PWNA motor input B (power) - analog
+GPIO.setup(BIN1,GPIO.OUT)  #BIN1 motor input A
+GPIO.setup(BIN2,GPIO.OUT)  #BIN2 motor input B
+GPIO.setup(PWNB,GPIO.OUT)   #PWNA motor input B (power) - analog
+
+#************************************
+''' General definitions '''
+#************************************
 
 SCALE_MULTIPLIER = 0.004
 EARTH_GRAVITY_MS2  = 9.80665
@@ -176,12 +217,25 @@ def statMotors():
     return s, p
 
 #************************************
+''' Read All sensors '''
+#************************************
+def readAllSensors():
+    l,r,c,b = readAllSonars(TRIG, ECHO)
+    x,y,z = readAccel(True)
+    s,p = statMotors()
+    return s,p,l,r,c,b,x,y,z
+
+#************************************
 ''' Full Stop '''
 #************************************
-def fullStop():
-    print('\nFULL STOP\n')
+def fullStop(end):
     runMotor(0,0)
     runMotor(1,0)
+    if end is True:
+        print('\nFULL STOP - Ending\n')
+        GPIO.cleanup()
+    else:
+        print('\nFULL STOP - Starting...\n')
 
 #************************************
 ''' Read IR sensors '''

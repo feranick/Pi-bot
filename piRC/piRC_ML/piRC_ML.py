@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170430a
+* version: 20170430b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -78,16 +78,16 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            #try:
-            runAuto(sys.argv[2])
-            #except:
-            #    exitProg()
+            try:
+                runAuto(sys.argv[2])
+            except:
+                exitProg()
 
         if o in ("-t" , "--train"):
-            #try:
-            runTrain(sys.argv[2])
-            #except:
-            #    exitProg()
+            try:
+                runTrain(sys.argv[2])
+            except:
+                sys.exit(2)
 
         if o in ("-c" , "--collect"):
             try:
@@ -103,9 +103,9 @@ def runAuto(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     clf = runNN(sensors, Cl, trainFileRoot)
-    import piRC_gpio, piRC_lib
+    import piRC_lib
     #make sure motors are stopped
-    piRC_lib.fullStop()
+    piRC_lib.fullStop(False)
     while True:
         s, p = predictDrive(clf)
         drive(s,p)
@@ -125,11 +125,9 @@ def runTrain(trainFile):
 ''' write training file from sensors '''
 #****************************************
 def writeTrainFile():
-    import piRC_gpio, piRC_lib
     while True:
-        l,r,c,b = piRC_lib.readAllSonars(piRC_gpio.TRIG, piRC_gpio.ECHO)
-        x,y,z = piRC_lib.readAccel(True)
-        s,p = piRC_lib.statMotors()
+        import piRC_lib
+        s,p,l,r,c,b,x,y,z = piRC_lib.readAllSensors()
         print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
         with open(params.filename, "a") as sum_file:
             sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(s,p,l,r,c,b,x,y,z))
@@ -195,9 +193,8 @@ def runNN(sensors, Cl, Root):
 ''' Predict drive pattern '''
 #************************************
 def predictDrive(clf):
-    import piRC_gpio, piRC_lib
-    l,r,c,b = piRC_lib.readAllSonars(piRC_gpio.TRIG, piRC_gpio.ECHO)
-    x,y,z = piRC_lib.readAccel(True)
+    import piRC_lib
+    s,p,l,r,c,b,x,y,z = piRC_lib.readAllSensors()
     np.set_printoptions(suppress=True)
             
     if params.debug is True:
@@ -241,7 +238,7 @@ def predictDrive(clf):
 ''' Drive '''
 #************************************
 def drive(s,p):
-    import piRC_gpio, piRC_lib
+    import piRC_lib
     piRC_lib.runMotor(0,s)
     piRC_lib.runMotor(1,p)
 
@@ -260,8 +257,8 @@ def usage():
     print(' Requires python 3.x. Not compatible with python 2.x\n')
 
 def exitProg():
-    fullStop()
-    GPIO.cleanup()
+    import piRC_lib
+    piRC_lib.fullStop(True)
     sys.exit(2)
 
 #************************************
