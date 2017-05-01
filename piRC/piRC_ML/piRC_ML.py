@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170430b
+* version: 20170501a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -107,9 +107,16 @@ def runAuto(trainFile):
     #make sure motors are stopped
     piRC_lib.fullStop(False)
     while True:
-        s, p = predictDrive(clf)
-        drive(s,p)
-        sleep(params.timeDelay)
+        t1 = time()
+        while dt < 1:
+            if p != 0:
+                t1 = time.time()
+            dt = time() - t1
+            s, p = predictDrive(clf)
+            drive(s,p)
+            sleep(params.timeDelay)
+        drive(0, 1)
+        sleep(0.5)
 
 #************************************
 ''' runTrain '''
@@ -199,7 +206,7 @@ def predictDrive(clf):
             
     if params.debug is True:
         nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
-        nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
+        #nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
     else:
         nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
                 
