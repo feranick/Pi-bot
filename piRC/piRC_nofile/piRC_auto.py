@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - auto
-* version: 20170424b
+* version: 20170430b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -13,10 +13,7 @@
 print(__doc__)
 
 import sys
-sys.path.append('piRC_lib')
-
-import piRC_gpio
-from piRC_lib import *
+import piRC_lib
 
 from time import sleep
 import random as rd
@@ -27,24 +24,15 @@ import random as rd
 
 def main():
     #make sure motors are stopped
-    fullStop()
+    piRC_libfullStop(False)
     
     while True:
         try:
-            l,r,c,b = readAllSonars(TRIG, ECHO)
-            obstacleAvoidanceSonars(l,r,c,b)
+            l,r,c,b = piRC_lib.readAllSonars(TRIG, ECHO)
+            piRC_libobstacleAvoidanceSonars(l,r,c,b)
         except:
-            fullStop()
-            GPIO.cleanup()
+            piRC_lib.fullStop(True)
             return
-
-#************************************
-''' Full Stop '''
-#************************************
-def fullStop():
-    print('\nFULL STOP\n')
-    runMotor(0,0)
-    runMotor(1,0)
 
 #************************************
 ''' Main initialization routine '''

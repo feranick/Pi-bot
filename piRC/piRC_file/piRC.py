@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC
-* version: 20170428a
+* version: 20170430ba
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -13,9 +13,6 @@
 print(__doc__)
 
 import sys
-sys.path.append('piRC_lib')
-
-import piRC_gpio
 from piRC_lib import *
 
 from time import sleep
@@ -31,7 +28,7 @@ powerFile = "powerStatus.txt"
 
 def main():
     #make sure motors are stopped
-    fullStop()
+    fullStop(False)
     
     while True:
         try:
@@ -39,8 +36,7 @@ def main():
             obstacleAvoidanceSonars(l,r,c,b)
             runManualControls()
         except:
-            fullStop()
-            GPIO.cleanup()
+            fullStop(True)
             return
 
 #************************************
@@ -82,14 +78,18 @@ def runManualControls():
 #************************************
 ''' Full Stop '''
 #************************************
-def fullStop():
-    print('\nFULL STOP\n')
+def fullStop(end):
     with open(webFolder+steerFile, 'w') as f:
         f.write("ZERO")
     runMotor(0,0)
     with open(webFolder+powerFile, 'w') as f:
         f.write("STOP")
     runMotor(1,0)
+    if end is True:
+        print('\nFULL STOP - Ending\n')
+        GPIO.cleanup()
+    else:
+        print('\nFULL STOP - Starting...\n')
 
 #************************************
 ''' Main initialization routine '''
