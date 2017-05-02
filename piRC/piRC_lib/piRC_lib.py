@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170430b
+* version: 20170502a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -26,8 +26,8 @@ import Adafruit_ADS1x15  # ADC ADS1115
 #IRr = 5
 #IRc = 7
 
-TRIG = [29,31,35,38]
-ECHO = [32,33,37,40]
+TRIG = [31,35,38,29]
+ECHO = [33,37,40,32]
 
 AIN1 = 11
 AIN2 = 13
