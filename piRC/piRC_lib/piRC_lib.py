@@ -113,9 +113,14 @@ def readSonar(TRIG,ECHO):
     
     while GPIO.input(ECHO)==0:
         pulse_start = time()
-    while GPIO.input(ECHO)==1:
-        pulse_end = time()
-    pulse_duration = pulse_end - pulse_start
+    #while GPIO.input(ECHO)==1:
+    #    pulse_end = time()
+    #pulse_duration = pulse_end - pulse_start
+    
+    #Experimental
+    while GPIO.input(ECHO)==1 or pulse_duration < 0.5:
+        pulse_duration = time() - pulse_start
+
     distance = pulse_duration * 17150
     distance = round(distance, 2)
     return distance
