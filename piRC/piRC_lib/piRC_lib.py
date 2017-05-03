@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170502a
+* version: 20170503a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -22,10 +22,6 @@ import Adafruit_ADS1x15  # ADC ADS1115
 ''' GPIO definitions '''
 #************************************
 
-#IRl = 3
-#IRr = 5
-#IRc = 7
-
 TRIG = [31,35,38,29]
 ECHO = [33,37,40,32]
 
@@ -39,15 +35,10 @@ PWNB = 12
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 
-#GPIO.setup(IRl, GPIO.IN) # Right sensor connection
-#GPIO.setup(IRr, GPIO.IN) # Left sensor connection
-#GPIO.setup(IRc, GPIO.IN) # Center sensor connection
-
 for i in range(len(ECHO)):
     GPIO.setup(TRIG[i],GPIO.OUT)
     GPIO.setup(ECHO[i],GPIO.IN)
 
-#these need to be fixed for TB6612
 GPIO.setup(AIN1,GPIO.OUT)   #AIN1 motor input A
 GPIO.setup(AIN2,GPIO.OUT)   #AIN2 motor input B
 GPIO.setup(PWNA,GPIO.OUT)   #PWNA motor input B (power) - analog
@@ -58,7 +49,6 @@ GPIO.setup(PWNB,GPIO.OUT)   #PWNA motor input B (power) - analog
 #************************************
 ''' General definitions '''
 #************************************
-
 SCALE_MULTIPLIER = 0.004
 EARTH_GRAVITY_MS2  = 9.80665
 
@@ -73,58 +63,6 @@ minDistanceC = 15
 minDistanceB = 10
 
 filename = 'Training_splrcbxyz.txt'
-
-#************************************
-''' Obstacle Avoidance '''
-''' ONLY FOR SONARS '''
-''' to be rewritten after calibration'''
-#************************************
-
-def obstacleAvoidanceSonars(l,r,c,b):
-    
-    if c<minDistanceC:                                  #Center sonar does not detect an object
-        if r>minDistanceR and l<minDistanceL:           #Right sonar detects an object
-            print('Obstacle detected on Left (l, r, c):',str(l),str(r),str(c))
-            runMotor(0, 1)
-            runMotor(1, -1)
-            sleep(timeTransient3)
-            runMotor(0,-1)
-            runMotor(1, 1)
-        
-        elif r<minDistanceR and l>minDistanceL:         #Left sonar detects an object
-            print('Obstacle detected on Right (l, r, c):',str(l),str(r),str(c))
-            runMotor(0, -1)
-            runMotor(1, -1)
-            sleep(timeTransient3)
-            runMotor(0,1)
-            runMotor(1, 1)
-    
-        else:
-            if r>minDistanceR and l>minDistanceL:
-                print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
-                #runMotor(0,0)
-                #runMotor(1, -1)
-                sleep(timeTransient1)
-            if r<minDistanceR and l<minDistanceL:
-                print('Surrounded by obstacles - BRAKE! (l, r, c):',str(l),str(r),str(c))
-                runMotor(0,0)
-                runMotor(1, -1)
-                sleep(timeTransient2)
-            
-            randomDirection = rd.choice([-1,1])
-            runMotor(0,randomDirection)
-            runMotor(1, -1)
-            sleep(timeTransient3)
-            runMotor(0,-randomDirection)
-            runMotor(1, 1)
-            sleep(timeTransient3)
-
-    else:
-        print('All clear (l, r, c):',str(l),str(r),str(c))
-        runMotor(0, 0)
-
-    if b<minDistanceB:
-        runMotor(1, 1)
 
 #************************************
 ''' Control Motors'''
@@ -238,14 +176,54 @@ def fullStop(end):
         print('\nFULL STOP - Starting...\n')
 
 #************************************
-''' Read IR sensors '''
-''' This is obsolete) '''
+''' Obstacle Avoidance '''
+''' ONLY FOR SONARS '''
+''' to be rewritten after calibration'''
 #************************************
-def irSensors():
-    l = GPIO.input(IRl)                         #Reading output of right IR sensor
-    r = GPIO.input(IRr)                        #Reading output of left IR sensor
-    c = GPIO.input(IRc)
-    return l, r, c
+def obstacleAvoidanceSonars(l,r,c,b):
+    if c<minDistanceC:                                  #Center sonar does not detect an object
+        if r>minDistanceR and l<minDistanceL:           #Right sonar detects an object
+            print('Obstacle detected on Left (l, r, c):',str(l),str(r),str(c))
+            runMotor(0, 1)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,-1)
+            runMotor(1, 1)
+        
+        elif r<minDistanceR and l>minDistanceL:         #Left sonar detects an object
+            print('Obstacle detected on Right (l, r, c):',str(l),str(r),str(c))
+            runMotor(0, -1)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,1)
+            runMotor(1, 1)
+        
+        else:
+            if r>minDistanceR and l>minDistanceL:
+                print('Obstacle detected Ahead (l, r, c):',str(l),str(r),str(c))
+                #runMotor(0,0)
+                #runMotor(1, -1)
+                sleep(timeTransient1)
+            if r<minDistanceR and l<minDistanceL:
+                print('Surrounded by obstacles - BRAKE! (l, r, c):',str(l),str(r),str(c))
+                runMotor(0,0)
+                runMotor(1, -1)
+                sleep(timeTransient2)
+            
+            randomDirection = rd.choice([-1,1])
+            runMotor(0,randomDirection)
+            runMotor(1, -1)
+            sleep(timeTransient3)
+            runMotor(0,-randomDirection)
+            runMotor(1, 1)
+            sleep(timeTransient3)
+
+    else:
+        print('All clear (l, r, c):',str(l),str(r),str(c))
+        runMotor(0, 0)
+    
+    if b<minDistanceB:
+        runMotor(1, 1)
 
 #************************************
 ''' Main initialization routine '''
