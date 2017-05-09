@@ -9,6 +9,24 @@ import time
 # Import the ADS1x15 module.
 import Adafruit_ADS1x15
 
+import RPi.GPIO as GPIO
+
+AIN1 = 11
+AIN2 = 13
+PWNA = 15
+BIN1 = 8
+BIN2 = 10
+PWNB = 12
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+
+GPIO.setup(AIN1,GPIO.OUT)   #AIN1 motor input A
+GPIO.setup(AIN2,GPIO.OUT)   #AIN2 motor input B
+GPIO.setup(PWNA,GPIO.OUT)   #PWNA motor input B (power) - analog
+GPIO.setup(BIN1,GPIO.OUT)  #BIN1 motor input A
+GPIO.setup(BIN2,GPIO.OUT)  #BIN2 motor input B
+GPIO.setup(PWNB,GPIO.OUT)   #PWNA motor input B (power) - analog
 
 # Create an ADS1115 ADC (16-bit) instance.
 adc = Adafruit_ADS1x15.ADS1115(address=0x48,busnum=1)
