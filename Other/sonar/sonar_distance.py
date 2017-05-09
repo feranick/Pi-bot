@@ -3,31 +3,31 @@
 #https://www.modmypi.com/blog/hc-sr04-ultrasonic-range-sensor-on-the-raspberry-pi
 
 import RPi.GPIO as GPIO
-import time
+import time, sys
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False) 
 
 if sys.argv[1] == "1":
-    # Front sonar
-    type = "front"
-        TRIG = 38
-            ECHO = 40
+  # Front sonar
+  type = "front"
+  TRIG = 38
+  ECHO = 40
 elif sys.argv[1] == "2":
     # Left sonar
-    type = "left"
-        TRIG = 31
-            ECHO = 33
+  type = "left"
+  TRIG = 31
+  ECHO = 33
 elif sys.argv[1] == "3":
-    # Right sonar
-    type = "right"
-        TRIG = 35
-            ECHO = 37
+  # Right sonar
+  type = "right"
+  TRIG = 35
+  ECHO = 37
 else:
-    # Back sonar
-    type = "back"
-        TRIG = 29
-            ECHO = 32
+  # Back sonar
+  type = "back"
+  TRIG = 29
+  ECHO = 32
 
 pulse = 0.0002
 
