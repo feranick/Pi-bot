@@ -63,7 +63,7 @@ while True:
         values[i] = factor*adc.read_adc(i, gain=GAIN, data_rate=128)
 
     s1 = values[0]-values[1]
-    p1 = values[2]-values[3]
+    p1 = values[3]-values[2]
     if s1 > 2:
         s = 1
     elif s1<-2:

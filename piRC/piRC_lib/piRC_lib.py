@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170503a
+* version: 20170509a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -144,7 +144,7 @@ def statMotors():
     GAIN = 1
     FACTOR = 5/32000 # using a 1.5MOhm
     s1 = (adc.read_adc(0, gain=GAIN, data_rate=128)-adc.read_adc(1, gain=GAIN, data_rate=128))*FACTOR
-    p1 = (adc.read_adc(2, gain=GAIN, data_rate=128)-adc.read_adc(3, gain=GAIN, data_rate=128))*FACTOR
+    p1 = (adc.read_adc(3, gain=GAIN, data_rate=128)-adc.read_adc(2, gain=GAIN, data_rate=128))*FACTOR
     if s1 > 2:
         s = 1
     elif s1<-2:

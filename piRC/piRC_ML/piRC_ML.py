@@ -106,13 +106,14 @@ def runAuto(trainFile):
     import piRC_lib
     #make sure motors are stopped
     piRC_lib.fullStop(False)
+    dt = 0
     while True:
         t1 = time()
         while dt < 1:
+            s, p = predictDrive(clf)
             if p != 0:
                 t1 = time.time()
             dt = time() - t1
-            s, p = predictDrive(clf)
             drive(s,p)
             sleep(params.timeDelay)
         drive(0, 1)
