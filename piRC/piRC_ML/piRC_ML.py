@@ -204,6 +204,7 @@ def runNN(sensors, Cl, Root):
 def predictDrive(clf):
     import piRC_lib
     s,p,l,r,c,b,x,y,z = piRC_lib.readAllSensors()
+    print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
     np.set_printoptions(suppress=True)
             
     if params.debug is True:
