@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170510a
+* version: 20170510b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
