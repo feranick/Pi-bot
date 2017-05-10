@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170501a
+* version: 20170510a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -106,14 +106,15 @@ def runAuto(trainFile):
     import piRC_lib
     #make sure motors are stopped
     piRC_lib.fullStop(False)
-    dt = 0
     while True:
-        t1 = time()
+        dt=0
+        t1=time()
         while dt < 1:
             s, p = predictDrive(clf)
             if p != 0:
-                t1 = time.time()
-            dt = time() - t1
+                dt = 0
+            else:
+                dt = time() - t1
             drive(s,p)
             sleep(params.timeDelay)
         drive(0, 1)
