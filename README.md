@@ -1,8 +1,6 @@
 # Pi-bot (piRC)
 Raspberry Pi Robots
 
-Under development. More to come.
-
 Hardware
 =========
 - robot: RC car with one motor for power, one motor for steering.
@@ -27,6 +25,7 @@ Driving mode
 =============
 - kind of automated (tries to avoid obstacles)
 - controlled via HTML
+- Partially autonomous through machine learning 
 
 Requirements
 =============
@@ -40,7 +39,7 @@ You would then need to install two libraries for the ADC (ADS1115) and accelerom
 
 Use
 ===
-Two versions of PiRC are provided:
+Three versions of PiRC are provided:
 - pirc_file: communication between PHP and python is done via shared file. auto and manual 
 control take place within the same python script
 - pirc_nofile: communication between PHP and python is done via shell. Auto control is, 
@@ -51,3 +50,7 @@ To be working properly, a library folder piRC_lib needs to be copied inside the 
 folders respectively:
 - pirc_file
 - pirc_nofile
+
+- pirc_ML: construct a learning profile using manual controls. Train the algorithm. Run as autonomous
+
+- pirc_init: Initialize sensors and GPIO ports for full use with remote control.
