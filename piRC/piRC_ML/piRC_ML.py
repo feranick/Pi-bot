@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170510b
+* version: 20170510d
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -38,7 +38,7 @@ class params:
 #**********************************************
 class nnDef:
     runNN = True
-    nnAlwaysRetrain = True
+    nnAlwaysRetrain = False
     
     regressor = False
 
@@ -73,13 +73,16 @@ def main():
             nnDef.regressor = False
         elif sys.argv[3] in ("-R", "--Regressor"):
             nnDef.regressor = True
+        else:
+            runFullAuto = False
     except:
         nnDef.regressor = False
+        runFullAuto = True
 
     for o, a in opts:
         if o in ("-r" , "--run"):
             try:
-                runAuto(sys.argv[2])
+                runAuto(sys.argv[2],runFullAuto)
             except:
                 exitProg()
 
@@ -99,7 +102,7 @@ def main():
 ''' runAuto '''
 ''' Use ML models to predict steer and power '''
 #************************************
-def runAuto(trainFile):
+def runAuto(trainFile, type):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     clf = runNN(sensors, Cl, trainFileRoot)
@@ -107,18 +110,25 @@ def runAuto(trainFile):
     #make sure motors are stopped
     piRC_lib.fullStop(False)
     while True:
-        dt=0
-        t1=time()
-        while dt < 1:
+        if type == True:
+            print(" Running \033[1mFull Auto\033[0m Mode\n")
+            dt=0
+            t1=time()
+            while dt < 1:
+                s, p = predictDrive(clf)
+                if p != 0:
+                    dt = 0
+                else:
+                    dt = time() - t1
+                    drive(s,p)
+                sleep(params.timeDelay)
+            drive(0, 1)
+            sleep(0.5)
+        else:
+            print(" Running \033[1mPartial Auto\033[0m Mode\n")
             s, p = predictDrive(clf)
-            if p != 0:
-                dt = 0
-            else:
-                dt = time() - t1
             drive(s,p)
             sleep(params.timeDelay)
-        drive(0, 1)
-        sleep(0.5)
 
 #************************************
 ''' runTrain '''
@@ -220,7 +230,7 @@ def predictDrive(clf):
             sp[1] = binarizer.inverse_transform(clf.predict(nowsensors))[0][1]
         except:
             sp = [0,0]
-        print('\033[1m' + '\n Predicted classification value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
+        print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         prob = clf.predict_proba(nowsensors)[0].tolist()
         print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
     else:
@@ -235,7 +245,7 @@ def predictDrive(clf):
                 sp[k] = 0
 
         score = clf.score(sensors,Y)
-        print('\033[1m' + '\n Predicted regression value (Neural Networks) = (',str(sp[0]),',',str(sp[1]),')')
+        print('\033[1m' + '\n Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         print(' (R^2 = ' + str('{:.5f}'.format(score)) + ')\033[0m')
         
     if params.saveNewTrainingData is True:
