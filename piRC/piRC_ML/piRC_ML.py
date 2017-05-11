@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170511a
+* version: 20170511c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -28,8 +28,6 @@ from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
 #**********************************************
 class params:
     timeDelay = 0.25
-    saveNewTrainingData = False
-
     debug = False # do not activate sensors or motors in debug mode
     filename = 'Training_splrcbxyz.txt'
 
@@ -39,6 +37,10 @@ class params:
 class nnDef:
     runNN = True
     nnAlwaysRetrain = False
+    
+    syncTimeLimit = 10  # time in seconds for NN model synchronization
+    syncTrainModel = False
+    saveNewTrainingData = False
     
     regressor = False
 
@@ -110,7 +112,13 @@ def runAuto(trainFile, type):
     import piRC_lib
     #make sure motors are stopped
     piRC_lib.fullStop(False)
+    syncTime = time()
     while True:
+        if time() - syncTime > nnDef.syncTimeLimit and nnDef.syncTrainModel == True:
+            print(" Synchronizing NN model...\n")
+            clf = runNN(sensors, Cl, trainFileRoot)
+            syncTime = time()
+        
         if type == True:
             print(" Running \033[1mFull Auto\033[0m Mode\n")
             dt=0
@@ -249,7 +257,7 @@ def predictDrive(clf):
         print('\033[1m' + '\n Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         print(' (R^2 = ' + str('{:.5f}'.format(score)) + ')\033[0m')
         
-    if params.saveNewTrainingData is True:
+    if nnDef.saveNewTrainingData is True:
         with open(params.filename, "a") as sum_file:
             sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z))
 
