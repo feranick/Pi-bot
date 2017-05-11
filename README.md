@@ -40,17 +40,19 @@ You would then need to install two libraries for the ADC (ADS1115) and accelerom
 Use
 ===
 Three versions of PiRC are provided:
-- pirc_file: communication between PHP and python is done via shared file. auto and manual 
+- piRC_ML: construct a learning profile using manual controls. Train the algorithm. Run as autonomous.
+- piRC_file: communication between PHP and python is done via shared file. auto and manual 
 control take place within the same python script
-- pirc_nofile: communication between PHP and python is done via shell. Auto control is, 
+- piRC_nofile: communication between PHP and python is done via shell. Auto control is, 
 well, automated, in the background. Manual control is done via python script when the user 
 is calling for an action.
 
-To be working properly, a library folder piRC_lib needs to be copied inside the two main 
+Utilities
+==========
+- (pirc_init): Initialize sensors and GPIO ports for full use with remote control.
+
+To be working properly, a library file piRC_lib.py needs to be copied inside the three main 
 folders respectively:
-- pirc_file
-- pirc_nofile
-
-- pirc_ML: construct a learning profile using manual controls. Train the algorithm. Run as autonomous
-
-- pirc_init: Initialize sensors and GPIO ports for full use with remote control.
+- piRC_file
+- piRC_nofile
+- piRC_ML
