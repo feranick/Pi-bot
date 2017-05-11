@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170510d
+* version: 20170511a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -43,6 +43,7 @@ class nnDef:
     regressor = False
 
     scaler = StandardScaler()
+    binarizer = MultiLabelBinarizer()
 
     # threshold in % of probabilities for listing prediction results
     thresholdProbabilityNNPred = 0.001
@@ -182,8 +183,7 @@ def runNN(sensors, Cl, Root):
     sensors = nnDef.scaler.fit_transform(sensors)
 
     if nnDef.regressor is False:
-        binarizer = MultiLabelBinarizer()
-        Y = binarizer.fit_transform(Cl)
+        Y = nnDef.binarizer.fit_transform(Cl)
     else:
         Y = Cl
 
@@ -213,6 +213,7 @@ def runNN(sensors, Cl, Root):
 #************************************
 def predictDrive(clf):
     import piRC_lib
+    sp = [0,0]
     s,p,l,r,c,b,x,y,z = piRC_lib.readAllSensors()
     print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
     np.set_printoptions(suppress=True)
@@ -222,12 +223,12 @@ def predictDrive(clf):
         #nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
     else:
         nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
-                
+
     if nnDef.regressor is False:
         nowsensors = nnDef.scaler.transform(nowsensors)
         try:
-            sp[0] = binarizer.inverse_transform(clf.predict(nowsensors))[0][0]
-            sp[1] = binarizer.inverse_transform(clf.predict(nowsensors))[0][1]
+            sp[0] = nnDef.binarizer.inverse_transform(clf.predict(nowsensors))[0][0]
+            sp[1] = nnDef.binarizer.inverse_transform(clf.predict(nowsensors))[0][1]
         except:
             sp = [0,0]
         print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
