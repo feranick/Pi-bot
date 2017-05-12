@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170510aa
+* version: 20170511d
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -64,6 +64,8 @@ minDistanceB = 10
 
 filename = 'Training_splrcbxyz.txt'
 
+maxSonarRange = 1000 # max set distance in cm
+
 #************************************
 ''' Control Motors'''
 #************************************
@@ -122,6 +124,8 @@ def readSonar(TRIG,ECHO):
     pulse_duration = pulse_end - pulse_start
     distance = pulse_duration * 17150
     distance = round(distance, 2)
+    if distance > maxSonarRange:
+        distance = maxSonarRange
     return distance
 
 #************************************
