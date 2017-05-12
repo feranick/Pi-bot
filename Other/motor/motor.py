@@ -39,7 +39,7 @@ def main():
     sleep(1)
     runMotor(0,-1)
     runMotor(1,-1)
-    sleepMotor(1)
+    sleep(1)
     runMotor(0,0)
     runMotor(1,0)
 
@@ -68,3 +68,10 @@ def runMotor(motor, state):
         GPIO.output(in2,0)
     #full power
     GPIO.output(pwn, 255)
+
+
+#************************************
+''' Main initialization routine '''
+#************************************
+if __name__ == "__main__":
+    sys.exit(main())
