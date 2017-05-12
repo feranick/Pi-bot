@@ -227,7 +227,7 @@ def predictDrive(clf):
     np.set_printoptions(suppress=True)
             
     if params.debug is True:
-        nowsensors = np.array([[1.10,1.10,1.10,1.10,0.000,0.000,0.000]]).reshape(1,-1)
+        nowsensors = np.array([[116,117,111,158,0.224,0.108,1.004]]).reshape(1,-1)
         #nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
     else:
         nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
