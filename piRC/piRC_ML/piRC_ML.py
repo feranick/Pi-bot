@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170511d
+* version: 20170512a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -109,9 +109,10 @@ def runAuto(trainFile, type):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     clf = runNN(sensors, Cl, trainFileRoot)
-    import piRC_lib
-    #make sure motors are stopped
-    piRC_lib.fullStop(False)
+    if params.debug is False:
+        import piRC_lib
+        #make sure motors are stopped
+        piRC_lib.fullStop(False)
     syncTime = time()
     while True:
         if time() - syncTime > nnDef.syncTimeLimit and nnDef.syncTrainModel == True:
@@ -220,17 +221,17 @@ def runNN(sensors, Cl, Root):
 ''' Predict drive pattern '''
 #************************************
 def predictDrive(clf):
-    import piRC_lib
-    sp = [0,0]
-    s,p,l,r,c,b,x,y,z = piRC_lib.readAllSensors()
-    print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
     np.set_printoptions(suppress=True)
             
     if params.debug is True:
-        nowsensors = np.array([[116,117,111,158,0.224,0.108,1.004]]).reshape(1,-1)
-        #nowsensors = np.array([[1.10,1.10,1.10,1.10,0.028,0.236,0.952]]).reshape(1,-1)
+        s,p,l,r,c,b,x,y,z = [-1,-1,116,117,111,158,0.224,0.108,1.004]
     else:
-        nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
+        import piRC_lib
+        sp = [0,0]
+        s,p,l,r,c,b,x,y,z = piRC_lib.readAllSensors()
+
+    print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
+    nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
 
     if nnDef.regressor is False:
         nowsensors = nnDef.scaler.transform(nowsensors)
@@ -267,9 +268,10 @@ def predictDrive(clf):
 ''' Drive '''
 #************************************
 def drive(s,p):
-    import piRC_lib
-    piRC_lib.runMotor(0,s)
-    piRC_lib.runMotor(1,p)
+    if params.debug is False:
+        import piRC_lib
+        piRC_lib.runMotor(0,s)
+        piRC_lib.runMotor(1,p)
 
 #************************************
 ''' Lists the program usage '''
