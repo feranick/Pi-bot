@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170512b
+* version: 20170512c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -30,6 +30,7 @@ class params:
     timeDelay = 0.25
     debug = False # do not activate sensors or motors in debug mode
     filename = 'Training_splrcbxyz.txt'
+    runFullAuto = False
 
 #**********************************************
 ''' Neural Networks'''
@@ -76,16 +77,13 @@ def main():
             nnDef.regressor = False
         elif sys.argv[3] in ("-R", "--Regressor"):
             nnDef.regressor = True
-        else:
-            runFullAuto = True
     except:
         nnDef.regressor = False
-        runFullAuto = False
 
     for o, a in opts:
         if o in ("-r" , "--run"):
             try:
-                runAuto(sys.argv[2],runFullAuto)
+                runAuto(sys.argv[2],params.runFullAuto)
             except:
                 exitProg()
 
