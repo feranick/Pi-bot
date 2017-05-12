@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170512c
+* version: 20170512d
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -240,8 +240,8 @@ def predictDrive(clf):
         print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
     else:
         sp = clf.predict(nowsensors)[0]
+        print('\033[1m' + '\n Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         for k in range(2):
-            print(sp[k])
             if sp[k] >= 1:
                 sp[k] = 1
             elif sp[k] <= -1:
@@ -249,9 +249,7 @@ def predictDrive(clf):
             else:
                 sp[k] = 0
 
-        score = clf.score(sensors,Y)
-        print('\033[1m' + '\n Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
-        print(' (R^2 = ' + str('{:.5f}'.format(score)) + ')\033[0m')
+        print('\033[1m' + ' Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
         
     if nnDef.saveNewTrainingData is True:
         with open(params.filename, "a") as sum_file:
