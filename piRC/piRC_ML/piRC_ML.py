@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170511c
+* version: 20170511d
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -77,10 +77,10 @@ def main():
         elif sys.argv[3] in ("-R", "--Regressor"):
             nnDef.regressor = True
         else:
-            runFullAuto = False
+            runFullAuto = True
     except:
         nnDef.regressor = False
-        runFullAuto = True
+        runFullAuto = False
 
     for o, a in opts:
         if o in ("-r" , "--run"):
