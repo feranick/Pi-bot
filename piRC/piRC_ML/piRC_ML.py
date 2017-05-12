@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170512a
+* version: 20170512b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -109,10 +109,7 @@ def runAuto(trainFile, type):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     clf = runNN(sensors, Cl, trainFileRoot)
-    if params.debug is False:
-        import piRC_lib
-        #make sure motors are stopped
-        piRC_lib.fullStop(False)
+    fullStop(False)
     syncTime = time()
     while True:
         if time() - syncTime > nnDef.syncTimeLimit and nnDef.syncTrainModel == True:
@@ -273,6 +270,11 @@ def drive(s,p):
         piRC_lib.runMotor(0,s)
         piRC_lib.runMotor(1,p)
 
+def fullStop(type):
+    if params.debug is False:
+        import piRC_lib
+        piRC_lib.fullStop(type)
+
 #************************************
 ''' Lists the program usage '''
 #************************************
@@ -288,8 +290,7 @@ def usage():
     print(' Requires python 3.x. Not compatible with python 2.x\n')
 
 def exitProg():
-    import piRC_lib
-    piRC_lib.fullStop(True)
+    fullStop(True)
     sys.exit(2)
 
 #************************************
