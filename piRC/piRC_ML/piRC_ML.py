@@ -206,7 +206,7 @@ def runNN(sensors, Cl, Root):
         if nnDef.regressor is False:
             clf = MLPClassifier(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
         else:
-            clf = MLPRegressor(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
+            clf = MLPRegressor(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=9)
         clf.fit(sensors, Y)
         joblib.dump(clf, nnTrainedData)
 
@@ -248,7 +248,6 @@ def predictDrive(clf):
                 sp[k] = -1
             else:
                 sp[k] = 0
-
         print('\033[1m' + ' Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
         
     if nnDef.saveNewTrainingData is True:
