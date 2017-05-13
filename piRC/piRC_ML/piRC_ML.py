@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170512g
+* version: 20170513a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -23,32 +23,34 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
 
-#************************************
+#**********************************************
 ''' MultiClassReductor '''
-#************************************
+#**********************************************
 class MultiClassReductor():
     def __self__(self):
         self.name = name
     
-    Aclass = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,0],[0,1],[1,-1],[1,0],[1,1]]
+    totalClass = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,0],[0,1],[1,-1],[1,0],[1,1]]
     
-    def trans(self,y):
+    def transform(self,y):
         Cl = np.zeros(y.shape[0])
         for j in range(len(y)):
-            Cl[j] = self.Aclass.index(np.array(y[j]).tolist())
+            Cl[j] = self.totalClass.index(np.array(y[j]).tolist())
         return Cl
     
-    def inv_trans(self,a):
-        return self.Aclass[int(a)]
+    def inverse_transform(self,a):
+        return self.totalClass[int(a)]
 
 #**********************************************
 ''' General parameters'''
 #**********************************************
 class params:
     timeDelay = 0.25
-    debug = False # do not activate sensors or motors in debug mode
     filename = 'Training_splrcbxyz.txt'
+
     runFullAuto = False
+
+    debug = False # do not activate sensors or motors in debug mode
 
 #**********************************************
 ''' Neural Networks'''
@@ -57,17 +59,14 @@ class nnDef:
     runNN = True
     nnAlwaysRetrain = False
     
-    syncTimeLimit = 10  # time in seconds for NN model synchronization
+    syncTimeLimit = 15  # time in seconds for NN model synchronization
     syncTrainModel = False
     saveNewTrainingData = False
     
-    regressor = False
+    useRegressor = False
 
     scaler = StandardScaler()
     mlp = MultiClassReductor()
-
-    # threshold in % of probabilities for listing prediction results
-    thresholdProbabilityNNPred = 0.001
     
     ''' Solver for NN
         lbfgs preferred for small datasets
@@ -92,11 +91,11 @@ def main():
     try:
         sys.argv[3]
         if sys.argv[3] in ("-C", "--Classifier"):
-            nnDef.regressor = False
+            nnDef.useRegressor = False
         elif sys.argv[3] in ("-R", "--Regressor"):
-            nnDef.regressor = True
+            nnDef.useRegressor = True
     except:
-        nnDef.regressor = False
+        nnDef.useRegressor = False
 
     for o, a in opts:
         if o in ("-r" , "--run"):
@@ -117,10 +116,10 @@ def main():
             except:
                 exitProg()
 
-#************************************
+#*************************************************
 ''' runAuto '''
 ''' Use ML models to predict steer and power '''
-#************************************
+#*************************************************
 def runAuto(trainFile, type):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
@@ -133,7 +132,12 @@ def runAuto(trainFile, type):
             clf = runNN(sensors, Cl, trainFileRoot)
             syncTime = time()
         
-        if type == True:
+        if type == False:
+            print(" Running \033[1mPartial Auto\033[0m Mode\n")
+            s, p = predictDrive(clf)
+            drive(s,p)
+            sleep(params.timeDelay)
+        else:
             print(" Running \033[1mFull Auto\033[0m Mode\n")
             dt=0
             t1=time()
@@ -147,25 +151,20 @@ def runAuto(trainFile, type):
                 sleep(params.timeDelay)
             drive(0, 1)
             sleep(0.5)
-        else:
-            print(" Running \033[1mPartial Auto\033[0m Mode\n")
-            s, p = predictDrive(clf)
-            drive(s,p)
-            sleep(params.timeDelay)
 
-#************************************
+#*************************************************
 ''' runTrain '''
 ''' Use ML models to predict steer and power '''
-#************************************
+#*************************************************
 def runTrain(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     nnDef.nnAlwaysRetrain = True
     runNN(sensors, Cl, trainFileRoot)
 
-#****************************************
+#*************************************************
 ''' write training file from sensors '''
-#****************************************
+#*************************************************
 def writeTrainFile():
     while True:
         import piRC_lib
@@ -174,9 +173,9 @@ def writeTrainFile():
         with open(params.filename, "a") as sum_file:
             sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\n'.format(s,p,l,r,c,b,x,y,z))
 
-#************************************
+#*************************************************
 ''' read Train File '''
-#************************************
+#*************************************************
 def readTrainFile(trainFile):
     try:
         with open(trainFile, 'r') as f:
@@ -196,7 +195,7 @@ def readTrainFile(trainFile):
 ''' Run Neural Network '''
 #********************************************************************************
 def runNN(sensors, Cl, Root):
-    if nnDef.regressor is False:
+    if nnDef.useRegressor is False:
         nnTrainedData = Root + '.nnModelC.pkl'
     else:
         nnTrainedData = Root + '.nnModelR.pkl'
@@ -204,8 +203,8 @@ def runNN(sensors, Cl, Root):
     
     sensors = nnDef.scaler.fit_transform(sensors)
 
-    if nnDef.regressor is False:
-        Y = nnDef.mlp.trans(Cl)
+    if nnDef.useRegressor is False:
+        Y = nnDef.mlp.transform(Cl)
     else:
         Y = Cl
 
@@ -221,7 +220,7 @@ def runNN(sensors, Cl, Root):
         ''' Retrain data if not available'''
         #**********************************************
         print(' Retraining NN model...\n')
-        if nnDef.regressor is False:
+        if nnDef.useRegressor is False:
             clf = MLPClassifier(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
         else:
             clf = MLPRegressor(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=9)
@@ -230,9 +229,9 @@ def runNN(sensors, Cl, Root):
 
     return clf
 
-#************************************
+#*************************************************
 ''' Predict drive pattern '''
-#************************************
+#*************************************************
 def predictDrive(clf):
     np.set_printoptions(suppress=True)
     sp = [0,0]
@@ -245,11 +244,11 @@ def predictDrive(clf):
     print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
     nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3)]]).reshape(1,-1)
 
-    if nnDef.regressor is False:
+    if nnDef.useRegressor is False:
         nowsensors = nnDef.scaler.transform(nowsensors)
         try:
-            sp[0] = nnDef.mlp.inv_trans(clf.predict(nowsensors)[0])[0]
-            sp[1] = nnDef.mlp.inv_trans(clf.predict(nowsensors)[0])[1]
+            sp[0] = nnDef.mlp.inverse_transform(clf.predict(nowsensors)[0])[0]
+            sp[1] = nnDef.mlp.inverse_transform(clf.predict(nowsensors)[0])[1]
         except:
             sp = [0,0]
         print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
@@ -273,9 +272,9 @@ def predictDrive(clf):
 
     return sp[0], sp[1]
 
-#************************************
+#*************************************************
 ''' Drive '''
-#************************************
+#*************************************************
 def drive(s,p):
     if params.debug is False:
         import piRC_lib
@@ -287,9 +286,9 @@ def fullStop(type):
         import piRC_lib
         piRC_lib.fullStop(type)
 
-#************************************
+#*************************************************
 ''' Lists the program usage '''
-#************************************
+#*************************************************
 def usage():
     print('\n Usage:')
     print('\n Training (Classifier):\n  python3 piRC_ML.py -t <train file>')
@@ -305,9 +304,8 @@ def exitProg():
     fullStop(True)
     sys.exit(2)
 
-
-#************************************
+#*************************************************
 ''' Main initialization routine '''
-#************************************
+#*************************************************
 if __name__ == "__main__":
     sys.exit(main())
