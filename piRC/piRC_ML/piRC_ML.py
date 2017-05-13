@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170512d
+* version: 20170512g
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -21,7 +21,25 @@ from datetime import datetime, date
 
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.externals import joblib
-from sklearn.preprocessing import MultiLabelBinarizer, StandardScaler
+from sklearn.preprocessing import StandardScaler
+
+#************************************
+''' MultiClassReductor '''
+#************************************
+class MultiClassReductor():
+    def __self__(self):
+        self.name = name
+    
+    Aclass = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,0],[0,1],[1,-1],[1,0],[1,1]]
+    
+    def trans(self,y):
+        Cl = np.zeros(y.shape[0])
+        for j in range(len(y)):
+            Cl[j] = self.Aclass.index(np.array(y[j]).tolist())
+        return Cl
+    
+    def inv_trans(self,a):
+        return self.Aclass[int(a)]
 
 #**********************************************
 ''' General parameters'''
@@ -46,7 +64,7 @@ class nnDef:
     regressor = False
 
     scaler = StandardScaler()
-    binarizer = MultiLabelBinarizer()
+    mlp = MultiClassReductor()
 
     # threshold in % of probabilities for listing prediction results
     thresholdProbabilityNNPred = 0.001
@@ -187,7 +205,7 @@ def runNN(sensors, Cl, Root):
     sensors = nnDef.scaler.fit_transform(sensors)
 
     if nnDef.regressor is False:
-        Y = nnDef.binarizer.fit_transform(Cl)
+        Y = nnDef.mlp.trans(Cl)
     else:
         Y = Cl
 
@@ -217,12 +235,11 @@ def runNN(sensors, Cl, Root):
 #************************************
 def predictDrive(clf):
     np.set_printoptions(suppress=True)
-            
+    sp = [0,0]
     if params.debug is True:
         s,p,l,r,c,b,x,y,z = [-1,-1,116,117,111,158,0.224,0.108,1.004]
     else:
         import piRC_lib
-        sp = [0,0]
         s,p,l,r,c,b,x,y,z = piRC_lib.readAllSensors()
 
     print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}'.format(s,p,l,r,c,b,x,y,z))
@@ -231,8 +248,8 @@ def predictDrive(clf):
     if nnDef.regressor is False:
         nowsensors = nnDef.scaler.transform(nowsensors)
         try:
-            sp[0] = nnDef.binarizer.inverse_transform(clf.predict(nowsensors))[0][0]
-            sp[1] = nnDef.binarizer.inverse_transform(clf.predict(nowsensors))[0][1]
+            sp[0] = nnDef.mlp.inv_trans(clf.predict(nowsensors)[0])[0]
+            sp[1] = nnDef.mlp.inv_trans(clf.predict(nowsensors)[0])[1]
         except:
             sp = [0,0]
         print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
@@ -287,6 +304,7 @@ def usage():
 def exitProg():
     fullStop(True)
     sys.exit(2)
+
 
 #************************************
 ''' Main initialization routine '''
