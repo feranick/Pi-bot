@@ -1,8 +1,8 @@
 # Pi-bot (piRC)
-Raspberry Pi Robots. Different approaches for control and driving are available:
+**Raspberry Pi Remote-controlled/autonomous cars**. Different approaches for control and driving are available:
 - Fully autonomous through deep learning neural networks 
-- driving aid, pseudo-automated (tries to avoid obstacles)
-- manual controlled via HTML interface
+- Driving aid, pseudo-automated (tries to avoid obstacles)
+- Manual controlled via HTML interface
 
 ## Hardware
 - robot: RC car with one motor for power, one motor for steering.
