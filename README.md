@@ -24,18 +24,18 @@ folders respectively:
 - piRC_nofile
 - piRC_ML
 
-##Requirements
+## Requirements
 Since it uses Python3, it requires the following packages
 
-    sudo apt-get install python3-rpi.gpio python3-dev python3-pip
+    `sudo apt-get install python3-rpi.gpio python3-dev python3-pip`
 
 You would then need to install two libraries for the ADC (ADS1115) and accelerometer (ADXL345)
 
-    sudo pip3 install adafruit-adxl345 adafruit-ads1x15
+    `sudo pip3 install adafruit-adxl345 adafruit-ads1x15`
 
 Machine learing is carried out using Sklearn, which needs the following packages:
 
-    sudo pip3 install numpy sklearn
+    `sudo pip3 install numpy sklearn`
 
 ## Installation
 To be working properly, a library file piRC_lib.py needs to be copied inside each of the folders:
@@ -56,15 +56,15 @@ folders respectively:
 This software (piRC/machine_learning/piRC_ML.py) is designed to accomplish three main tasks
 - **Collection mode (CM)** Collect sensor data and save it into what will be a training file. When the software is operated with CM, the user is supposed to operate the RC in fully manual mode (i.e. using the original remote control. You can stop the collection by exiting with CTRL+C. The result is a file ("Training_splrcbxyz.txt") with sensor readings that are ready for machine training. Examples are provided in piRC/piRC_ML/Training (it is strongly recommended to create your own). CM mode runs using this command:
 
-    python3 piRC_ML.py -c
+    `python3 piRC_ML.py -c`
 
 - **Training mode (TM)** Using the training file (for example "Training_splrcbxyz.txt"), a neural network training model is created and saved with the extension ".nnModelC.pkl". Training can be conducted in the Rpi within the RC car itself, or in any other computer running python and related libraries. This usually is much much faster. TM mode runs using this command:
 
-    python3 piRC_ML.py -t <training file>
+    `python3 piRC_ML.py -t <training file>`
 
 - **Running mode (RM)** Once the training is completed, you can run run the inference mode (which uses sensor data acquired in real time to infer steering and power) and ultimately the RC car itself through this command
 
-    python3 piRC_ML.py -r Training_splrcbxyz.txt
+    `python3 piRC_ML.py -r Training_splrcbxyz.txt`
 
 A few notes on RM:
 - If training model is not available, one is created at launch time.
