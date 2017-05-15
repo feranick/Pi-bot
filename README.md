@@ -18,24 +18,18 @@ Raspberry Pi Robots. Different approaches for control and driving are available:
     - 2 front left side break beam sensors 3mm LEDs (https://www.adafruit.com/products/2167)
     - 1 front [GP2Y0A21YK0F](http://www.sharp-world.com/products/device/lineup/data/pdf/datasheet/gp2y0a21yk_e.pdf) Sharp IR Analog Distance Sensor 10-80cm
 
-To be working properly, a library file piRC_lib.py needs to be copied inside the three main 
-folders respectively:
-- piRC_file
-- piRC_nofile
-- piRC_ML
-
 ## Requirements
 Since it uses Python3, it requires the following packages
 
-    `sudo apt-get install python3-rpi.gpio python3-dev python3-pip`
+    sudo apt-get install python3-rpi.gpio python3-dev python3-pip
 
 You would then need to install two libraries for the ADC (ADS1115) and accelerometer (ADXL345)
 
-    `sudo pip3 install adafruit-adxl345 adafruit-ads1x15`
+    sudo pip3 install adafruit-adxl345 adafruit-ads1x15
 
 Machine learing is carried out using Sklearn, which needs the following packages:
 
-    `sudo pip3 install numpy sklearn`
+    sudo pip3 install numpy sklearn
 
 ## Installation
 To be working properly, a library file piRC_lib.py needs to be copied inside each of the folders:
@@ -43,13 +37,6 @@ To be working properly, a library file piRC_lib.py needs to be copied inside eac
 - piRC_nofile
 - piRC_ML
 - Upon booting Raspbian, the motors may not be responsive due to some GPIO channels not being properly initialized. Use (piRC/other/pirc_init.py) to initialize them.
-
-To be working properly, a library file piRC_lib.py needs to be copied inside the three main 
-folders respectively:
-- piRC_file
-- piRC_nofile
-- piRC_ML
-
 
 ## Usage
 ### piRC_ML (deep learning neural networks)
@@ -68,10 +55,10 @@ This software (piRC/machine_learning/piRC_ML.py) is designed to accomplish three
 
 A few notes on RM:
 - If training model is not available, one is created at launch time.
-- a bash script is provided (piRC/machine_learning/syncTraining/syncTFile.sh) to allow the transfer of the training file to a separate computer, run the training in that computer and retrieve the model for usage in the piRC.
-- The training file can be improved while in RM by adding real time sensor data to it (the flag "saveNewTrainingData" needs to be set to True). This is useful as a new training model can be created on the fly (using the bash script as per the previous point). piRC_ML.py can be set to periorically reload (default is 15seconds, change using syncTimeLimit) the training model without relaunching the script (the flag "syncTrainModel" needs to be set to True).
-- Two Machine learning methodsare available: using the MultiPerceptron Classifier (MLPClassifier, recommended) or Regressor (MLPRegressor, highly experimental and not recommended). 
-- Two operation modes are available:
+- a bash script is provided (`piRC/machine_learning/syncTraining/syncTFile.sh`) to allow the transfer of the training file to a separate computer, run the training in that computer and retrieve the model for usage in the piRC.
+- The training file can be improved while in RM by adding real time sensor data to it (the flag `saveNewTrainingData` needs to be set to True). This is useful as a new training model can be created on the fly (using the bash script as per the previous point). piRC_ML.py can be set to periorically reload (default is 15 seconds, change using `syncTimeLimit`) the training model without relaunching the script (the flag `syncTrainModel` needs to be set to True).
+- Two Machine learning methodsare available: using the MultiPerceptron Classifier (`MLPClassifier`, recommended) or Regressor (`MLPRegressor`, highly experimental and not recommended). 
+- Two operation modes are available, and can be enabled using the flab `runFullAuto`:
     - Partial Auto: piRC will only respond to the sensor data, but it will no proactively "drive forward" if it has no reason for it. You need to use manual commands to help it. 
     - Full Auto: piRC will proactively drive forward if it has been standing still for a given amount of time. 
 
@@ -82,6 +69,6 @@ piRC can be controlled using a web interface. Communication between PHP and pyth
 is calling for an action.
 
 ### Additional utilities
-- (pirc_init): Initialize sensors and GPIO ports for full use with remote control.
+- `pirc_init`: Initialize sensors and GPIO ports for full use with remote control.
 
 
