@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170513a
+* version: 20170516a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -13,7 +13,7 @@
 print(__doc__)
 
 import numpy as np
-import sys, os.path, getopt, glob, csv
+import sys, os.path, os, getopt, glob, csv
 from time import sleep, time
 from os.path import exists, splitext
 from os import rename
@@ -128,8 +128,10 @@ def runAuto(trainFile, type):
     syncTime = time()
     while True:
         if time() - syncTime > nnDef.syncTimeLimit and nnDef.syncTrainModel == True:
-            print(" Synchronizing NN model...\n")
+            print(" Reloading NN model...")
             clf = runNN(sensors, Cl, trainFileRoot)
+            print(" Synchronizing NN model...\n")
+            os.system("./syncTFile.sh &")
             syncTime = time()
         
         if type == False:
