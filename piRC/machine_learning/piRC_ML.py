@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170516a
+* version: 20170518a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -143,16 +143,17 @@ def runAuto(trainFile, type):
             print(" Running \033[1mFull Auto\033[0m Mode\n")
             dt=0
             t1=time()
-            while dt < 1:
+            while dt < 0.5:
                 s, p = predictDrive(clf)
                 if p != 0:
                     dt = 0
+                    drive(s,p)
                 else:
                     dt = time() - t1
-                    drive(s,p)
                 sleep(params.timeDelay)
             drive(0, 1)
             sleep(0.5)
+            drive(0, 0)
 
 #*************************************************
 ''' runTrain '''
