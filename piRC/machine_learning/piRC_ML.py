@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Machine learning train and predict
-* version: 20170518a
+* version: 20170518b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -59,7 +59,7 @@ class nnDef:
     runNN = True
     nnAlwaysRetrain = False
     
-    syncTimeLimit = 15  # time in seconds for NN model synchronization
+    syncTimeLimit = 20  # time in seconds for NN model synchronization
     syncTrainModel = False
     saveNewTrainingData = False
     
@@ -131,7 +131,7 @@ def runAuto(trainFile, type):
             print(" Reloading NN model...")
             clf = runNN(sensors, Cl, trainFileRoot)
             print(" Synchronizing NN model...\n")
-            os.system("./syncTFile.sh &")
+            os.system("./syncTFile.sh " + trainFileRoot + " &")
             syncTime = time()
         
         if type == False:
