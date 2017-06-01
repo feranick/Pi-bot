@@ -2,6 +2,8 @@
 #
 # Measure speed using Doppler. 
 # Uses: HB100 Doppler Speed Sensor
+# https://www.tindie.com/products/limpkin/hb100-doppler-speed-sensor-arduino-compatible/
+# https://supertechnologyknowledgequest.blogspot.com/2016/08/adventures-in-radar-with-raspberry-pi.html
 #
 
 import RPi.GPIO as GPIO

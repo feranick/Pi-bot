@@ -12,7 +12,8 @@
 - Stepper motor controller: Adafruit [TB6612](https://learn.adafruit.com/adafruit-tb6612-h-bridge-dc-stepper-motor-driver-breakout/overview), 1.2A DC (Op. Voltage: 3.3V or 5V)
 - Sensing the motor status requires a 1.5MOhm resistor to from the power motor leads to the ADS1115. 
 - Sonars: 4 [HC-SR04](http://www.micropik.com/PDF/HCSR04.pdf) (left, right, center, back); (Op. Voltage: 5V)
-  Warning: the output operating voltage is 5V, while RPi accepts only up to 3.3V, so you need a voltage divider. 
+  Warning: the output operating voltage is 5V, while RPi accepts only up to 3.3V, so you need a voltage divider.
+- Radar (support is upcoming): 1 microwave Doppler Radar [HB100](https://www.tindie.com/products/limpkin/hb100-doppler-speed-sensor-arduino-compatible/)
 
 - Deprecated IR sensors:
     - 2 front left side break beam sensors 3mm LEDs (https://www.adafruit.com/products/2167)
