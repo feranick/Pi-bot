@@ -27,4 +27,4 @@ def getSpeed():
 
 while True:
    print("Speed: ", getSpeed(),"MPH\n")
-   sleep(0.5)
+   time.sleep(0.5)
