@@ -3,8 +3,8 @@
 '''
 **********************************************************
 *
-* PiRC - Machine learning train and predict
-* version: 20180103a
+* PiRC - Self-driving RC car via Machine Learning
+* version: 20180103b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -111,10 +111,10 @@ def main():
                 sys.exit(2)
 
         if o in ("-c" , "--collect"):
-            try:
-                writeTrainFile()
-            except:
-                exitProg()
+            #try:
+            writeTrainFile()
+            #except:
+            #    exitProg()
 
 #*************************************************
 ''' runAuto '''
@@ -172,9 +172,9 @@ def writeTrainFile():
     while True:
         import piRC_lib
         s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors()
-        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={8:.3f}'.format(s,p,l,r,c,b,x,y,z,v))
+        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(s,p,l,r,c,b,x,y,z,v))
         with open(params.filename, "a") as sum_file:
-            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{8:.3f}\n'.format(s,p,l,r,c,b,x,y,z,v))
+            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.2f}\n'.format(s,p,l,r,c,b,x,y,z,v))
 
 #*************************************************
 ''' read Train File '''
@@ -244,8 +244,8 @@ def predictDrive(clf):
         import piRC_lib
         s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors()
 
-    print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={8:.3f}'.format(s,p,l,r,c,b,x,y,z,v))
-    nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3),round(v,3)]]).reshape(1,-1)
+    print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(s,p,l,r,c,b,x,y,z,v))
+    nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3),round(v,2)]]).reshape(1,-1)
 
     if nnDef.useRegressor is False:
         nowsensors = nnDef.scaler.transform(nowsensors)
@@ -271,7 +271,7 @@ def predictDrive(clf):
         
     if nnDef.saveNewTrainingData is True:
         with open(params.filename, "a") as sum_file:
-            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{8:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z,v))
+            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z,v))
 
     return sp[0], sp[1]
 
@@ -299,7 +299,7 @@ def usage():
     print('\n Training (Regression):\n  python3 piRC_ML.py -t <train file> -R')
     print('\n Prediction (Regression):\n  python3 piRC_ML.py -r <train file> -R')
     print('\n Collect data from sensors into training file:\n  python3 piRC_ML.py -c')
-    print('\n (Separate trained models are created for regression and classification\n')
+    print('\n (Separate trained models are created for regression and classification)\n')
 
     print(' Requires python 3.x. Not compatible with python 2.x\n')
 

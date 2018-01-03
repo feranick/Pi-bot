@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20180103a
+* version: 20180103b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -44,9 +44,11 @@ for i in range(len(ECHO)):
 GPIO.setup(AIN1,GPIO.OUT)   #AIN1 motor input A
 GPIO.setup(AIN2,GPIO.OUT)   #AIN2 motor input B
 GPIO.setup(PWNA,GPIO.OUT)   #PWNA motor input B (power) - analog
-GPIO.setup(BIN1,GPIO.OUT)  #BIN1 motor input A
-GPIO.setup(BIN2,GPIO.OUT)  #BIN2 motor input B
+GPIO.setup(BIN1,GPIO.OUT)   #BIN1 motor input A
+GPIO.setup(BIN2,GPIO.OUT)   #BIN2 motor input B
 GPIO.setup(PWNB,GPIO.OUT)   #PWNA motor input B (power) - analog
+
+GPIO.setup(RADIN, GPIO.IN)  #Radar
 
 #************************************
 ''' General definitions '''
@@ -173,10 +175,10 @@ def statMotors():
 #************************************
 def getSpeedRadar():
    GPIO.wait_for_edge(RADIN, GPIO.FALLING, timeout = radTimeout)
-   start = time.time()
+   start = time()
    for impulse_count in range(radNumCycles):
       GPIO.wait_for_edge(RADIN, GPIO.FALLING, timeout = radTimeout)
-   duration = time.time() - start       # seconds to run loop
+   duration = time() - start       # seconds to run loop
    frequency = radNumCycles / duration    # in Hz
    speed = frequency * float(0.44704) / float(31.36)     # Hz to km/h from sensor datasheet
    if speed < radMinSpeed:
