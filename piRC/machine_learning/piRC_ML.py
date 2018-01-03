@@ -111,10 +111,10 @@ def main():
                 sys.exit(2)
 
         if o in ("-c" , "--collect"):
-            #try:
-            writeTrainFile()
-            #except:
-            #    exitProg()
+            try:
+                writeTrainFile()
+            except:
+                exitProg()
 
 #*************************************************
 ''' runAuto '''
