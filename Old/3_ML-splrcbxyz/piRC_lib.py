@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20170511d
+* version: 20180103a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -31,6 +31,8 @@ PWNA = 15
 BIN1 = 8
 BIN2 = 10
 PWNB = 12
+
+RADIN = 24
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
@@ -65,6 +67,10 @@ minDistanceB = 10
 filename = 'Training_splrcbxyz.txt'
 
 maxSonarRange = 1000 # max set distance in cm
+
+radNumCycles = 3 # number of cycles to average for radar
+radTimeout = 100 #ms
+radMinSpeed = 0.22
 
 #************************************
 ''' Control Motors'''
@@ -163,13 +169,29 @@ def statMotors():
     return s, p
 
 #************************************
+''' Read Speed via Radar Doppler '''
+#************************************
+def getSpeedRadar():
+   GPIO.wait_for_edge(RADIN, GPIO.FALLING, timeout = radTimeout)
+   start = time.time()
+   for impulse_count in range(radNumCycles):
+      GPIO.wait_for_edge(RADIN, GPIO.FALLING, timeout = radTimeout)
+   duration = time.time() - start       # seconds to run loop
+   frequency = radNumCycles / duration    # in Hz
+   speed = frequency * float(0.44704) / float(31.36)     # Hz to km/h from sensor datasheet
+   if speed < radMinSpeed:
+      speed = 0
+   return speed
+
+#************************************
 ''' Read All sensors '''
 #************************************
 def readAllSensors():
     l,r,c,b = readAllSonars(TRIG, ECHO)
     x,y,z = readAccel(True)
     s,p = statMotors()
-    return s,p,l,r,c,b,x,y,z
+    v = getSpeedRadar()
+    return s,p,l,r,c,b,x,y,z,v
 
 #************************************
 ''' Full Stop '''
