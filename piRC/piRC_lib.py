@@ -77,7 +77,7 @@ radNumCycles = 3 # number of cycles to average for radar
 radTimeout = 100 #ms
 radMinSpeed = 0.22
 
-img_size = (768, 768)
+img_size = (320, 320)
 resized_size = (10,10)
 
 #************************************
@@ -203,12 +203,12 @@ class Camera():
         self.cam.hflip = True
 
     def getImage(self):
-        output = np.empty((img_size[0],img_size[1],3), dtype=np.uint8)
+        output = np.empty((img_size[0], img_size[1],3), dtype=np.uint8)
         self.cam.capture(output, 'rgb')
         img = Image.fromarray(output).convert('L')
         img_resized = img.resize(resized_size, Image.ANTIALIAS)
-        data = np.asarray( img_resized, dtype="int32" )
-        print(data)
+        data = np.asarray( img_resized, dtype="int32" ).flatten()
+        #print(data)
         return data
 
     def saveImage(self, npdata, outfilename ) :
@@ -225,8 +225,11 @@ def readAllSensors(useCamera):
     x,y,z = readAccel(True)
     s,p = statMotors()
     v = getSpeedRadar()
+    data = np.asarray((s,p,l,r,c,b,x,y,z,v))
     if useCamera == True:
         img = cam.getImage()
+        data = np.append(data, img)
+        print(data)
         return s,p,l,r,c,b,x,y,z,v,img
     else:
         return s,p,l,r,c,b,x,y,z,v
