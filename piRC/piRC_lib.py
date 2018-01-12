@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20180103b
+* version: 20180112a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -17,6 +17,8 @@ import sys
 import random as rd
 import Adafruit_ADXL345  # Accelerometer ADXL345
 import Adafruit_ADS1x15  # ADC ADS1115
+from PIL import Image
+import picamera
 
 #************************************
 ''' GPIO definitions '''
@@ -74,6 +76,14 @@ radNumCycles = 3 # number of cycles to average for radar
 radTimeout = 100 #ms
 radMinSpeed = 0.22
 
+img_size = (768, 768)
+resized_size = (10,10)
+
+#************************************
+''' Initialize subsystems'''
+#************************************
+def init_subsystems():
+    init_camera()
 #************************************
 ''' Control Motors'''
 #************************************
@@ -184,6 +194,28 @@ def getSpeedRadar():
    if speed < radMinSpeed:
       speed = 0
    return speed
+
+#************************************
+''' Camera methods '''
+#************************************
+def init_camera():
+    camera = picamera.PiCamera()
+    camera.resolution = img_size
+    camera.vflip = True
+    camera.hflip = True
+    return camera
+
+def get_image(camera):
+    output = np.empty((img_size[0],img_size[1],3), dtype=np.uint8)
+    camera.capture(output, 'rgb')
+    img = Image.fromarray(output).convert('L')
+    img_resized = img.resize(resized_size, Image.ANTIALIAS)
+    data = np.asarray( img_resized, dtype="int32" )
+    return data
+
+def save_image( npdata, outfilename ) :
+    img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint8"), "L" )
+    img.save( outfilename )
 
 #************************************
 ''' Read All sensors '''

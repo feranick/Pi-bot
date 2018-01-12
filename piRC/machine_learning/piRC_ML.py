@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20180103b
+* version: 20180112a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -97,24 +97,28 @@ def main():
     except:
         nnDef.useRegressor = False
 
+    if params.debug is False:
+        import piRC_lib
+        piRC_lib.init_subsystems()
+
     for o, a in opts:
         if o in ("-r" , "--run"):
-            try:
-                runAuto(sys.argv[2],params.runFullAuto)
-            except:
-                exitProg()
+            #try:
+            runAuto(sys.argv[2],params.runFullAuto)
+            #except:
+            #    exitProg()
 
         if o in ("-t" , "--train"):
-            try:
-                runTrain(sys.argv[2])
-            except:
-                sys.exit(2)
+            #try:
+            runTrain(sys.argv[2])
+            #except:
+            #    sys.exit(2)
 
         if o in ("-c" , "--collect"):
-            try:
-                writeTrainFile()
-            except:
-                exitProg()
+            #try:
+            writeTrainFile()
+            #except:
+            #    exitProg()
 
 #*************************************************
 ''' runAuto '''
