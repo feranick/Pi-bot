@@ -49,7 +49,7 @@ class params:
     filename = 'Training_splrcbxyzv.txt'
 
     runFullAuto = False
-    useCamera = True
+    useCamera = False
 
     debug = False # do not activate sensors or motors in debug mode
 
