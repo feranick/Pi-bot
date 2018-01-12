@@ -226,8 +226,10 @@ def readAllSensors(useCamera):
     s,p = statMotors()
     v = getSpeedRadar()
     if useCamera == True:
-        data = cam.getImage()
-    return s,p,l,r,c,b,x,y,z,v
+        img = cam.getImage()
+        return s,p,l,r,c,b,x,y,z,v,img
+    else:
+        return s,p,l,r,c,b,x,y,z,v
 
 #************************************
 ''' Full Stop '''
