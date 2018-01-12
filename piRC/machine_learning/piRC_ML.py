@@ -75,6 +75,10 @@ class nnDef:
     nnSolver = 'lbfgs'
     nnNeurons = 10  #default = 10
 
+
+if params.debug == False:
+        import piRC_lib
+
 #**********************************************
 ''' Main '''
 #**********************************************
@@ -171,7 +175,6 @@ def runTrain(trainFile):
 #*************************************************
 def writeTrainFile():
     while True:
-        import piRC_lib
         s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors(params.useCamera)
         print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(s,p,l,r,c,b,x,y,z,v))
         with open(params.filename, "a") as sum_file:
@@ -242,7 +245,6 @@ def predictDrive(clf):
     if params.debug is True:
         s,p,l,r,c,b,x,y,z,v = [-1,-1,116,117,111,158,0.224,0.108,1.004,1.5]
     else:
-        import piRC_lib
         s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors(params.useCamera)
 
     print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(s,p,l,r,c,b,x,y,z,v))
@@ -281,13 +283,11 @@ def predictDrive(clf):
 #*************************************************
 def drive(s,p):
     if params.debug is False:
-        import piRC_lib
         piRC_lib.runMotor(0,s)
         piRC_lib.runMotor(1,p)
 
 def fullStop(type):
     if params.debug is False:
-        import piRC_lib
         piRC_lib.fullStop(type)
 
 #*************************************************
