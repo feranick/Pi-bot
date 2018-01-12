@@ -80,11 +80,6 @@ img_size = (768, 768)
 resized_size = (10,10)
 
 #************************************
-''' Initialize subsystems'''
-#************************************
-def init_subsystems():
-    init_camera()
-#************************************
 ''' Control Motors'''
 #************************************
 def runMotor(motor, state):
@@ -198,24 +193,24 @@ def getSpeedRadar():
 #************************************
 ''' Camera methods '''
 #************************************
-def init_camera():
-    camera = picamera.PiCamera()
-    camera.resolution = img_size
-    camera.vflip = True
-    camera.hflip = True
-    return camera
+class camera:
+    def __init__(self, parent=None):
+        self.cam = picamera.PiCamera()
+        self.cam.resolution = img_size
+        self.cam.vflip = True
+        self.cam.hflip = True
 
-def get_image(camera):
-    output = np.empty((img_size[0],img_size[1],3), dtype=np.uint8)
-    camera.capture(output, 'rgb')
-    img = Image.fromarray(output).convert('L')
-    img_resized = img.resize(resized_size, Image.ANTIALIAS)
-    data = np.asarray( img_resized, dtype="int32" )
-    return data
+    def get_image(self):
+        output = np.empty((img_size[0],img_size[1],3), dtype=np.uint8)
+        self.cam.capture(output, 'rgb')
+        img = Image.fromarray(output).convert('L')
+        img_resized = img.resize(resized_size, Image.ANTIALIAS)
+        data = np.asarray( img_resized, dtype="int32" )
+        return data
 
-def save_image( npdata, outfilename ) :
-    img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint8"), "L" )
-    img.save( outfilename )
+    def save_image(self, npdata, outfilename ) :
+        self.img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint8"), "L" )
+        self.img.save( outfilename )
 
 #************************************
 ''' Read All sensors '''

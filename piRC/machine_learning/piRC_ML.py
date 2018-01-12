@@ -97,10 +97,6 @@ def main():
     except:
         nnDef.useRegressor = False
 
-    if params.debug is False:
-        import piRC_lib
-        piRC_lib.init_subsystems()
-
     for o, a in opts:
         if o in ("-r" , "--run"):
             #try:
