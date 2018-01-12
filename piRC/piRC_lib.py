@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20180112a
+* version: 20180112b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -19,6 +19,7 @@ import Adafruit_ADXL345  # Accelerometer ADXL345
 import Adafruit_ADS1x15  # ADC ADS1115
 from PIL import Image
 import picamera
+import numpy as np
 
 #************************************
 ''' GPIO definitions '''
@@ -193,33 +194,39 @@ def getSpeedRadar():
 #************************************
 ''' Camera methods '''
 #************************************
-class camera:
+class Camera():
     def __init__(self, parent=None):
+        #print("Initializing camera")
         self.cam = picamera.PiCamera()
         self.cam.resolution = img_size
         self.cam.vflip = True
         self.cam.hflip = True
 
-    def get_image(self):
+    def getImage(self):
         output = np.empty((img_size[0],img_size[1],3), dtype=np.uint8)
         self.cam.capture(output, 'rgb')
         img = Image.fromarray(output).convert('L')
         img_resized = img.resize(resized_size, Image.ANTIALIAS)
         data = np.asarray( img_resized, dtype="int32" )
+        print(data)
         return data
 
-    def save_image(self, npdata, outfilename ) :
+    def saveImage(self, npdata, outfilename ) :
         self.img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint8"), "L" )
         self.img.save( outfilename )
+
+cam = Camera()
 
 #************************************
 ''' Read All sensors '''
 #************************************
-def readAllSensors():
+def readAllSensors(useCamera):
     l,r,c,b = readAllSonars(TRIG, ECHO)
     x,y,z = readAccel(True)
     s,p = statMotors()
     v = getSpeedRadar()
+    if useCamera == True:
+        data = cam.getImage()
     return s,p,l,r,c,b,x,y,z,v
 
 #************************************

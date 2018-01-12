@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20180112a
+* version: 20180112b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -49,6 +49,7 @@ class params:
     filename = 'Training_splrcbxyzv.txt'
 
     runFullAuto = False
+    useCamera = True
 
     debug = False # do not activate sensors or motors in debug mode
 
@@ -171,7 +172,7 @@ def runTrain(trainFile):
 def writeTrainFile():
     while True:
         import piRC_lib
-        s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors()
+        s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors(params.useCamera)
         print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(s,p,l,r,c,b,x,y,z,v))
         with open(params.filename, "a") as sum_file:
             sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.2f}\n'.format(s,p,l,r,c,b,x,y,z,v))
@@ -242,7 +243,7 @@ def predictDrive(clf):
         s,p,l,r,c,b,x,y,z,v = [-1,-1,116,117,111,158,0.224,0.108,1.004,1.5]
     else:
         import piRC_lib
-        s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors()
+        s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors(params.useCamera)
 
     print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(s,p,l,r,c,b,x,y,z,v))
     nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3),round(v,2)]]).reshape(1,-1)
