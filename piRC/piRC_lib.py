@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC_lib
-* version: 20180112b
+* version: 20180112c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -229,10 +229,8 @@ def readAllSensors(useCamera):
     if useCamera == True:
         img = cam.getImage()
         data = np.append(data, img)
-        print(data)
-        return s,p,l,r,c,b,x,y,z,v,img
-    else:
-        return s,p,l,r,c,b,x,y,z,v
+        #print(data)
+    return data
 
 #************************************
 ''' Full Stop '''

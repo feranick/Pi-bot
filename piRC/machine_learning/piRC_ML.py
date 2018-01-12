@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20180112b
+* version: 20180112c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -46,11 +46,16 @@ class MultiClassReductor():
 #**********************************************
 class params:
     timeDelay = 0.25
-    filename = 'Training_splrcbxyzv.txt'
 
     runFullAuto = False
-    useCamera = True
-
+    useCamera = False
+    
+    if useCamera == True:
+        filename = 'Training_splrcbxyzvCam.txt'
+        camStr = "ON"
+    else:
+        filename = 'Training_splrcbxyzv.txt'
+        camStr = "OFF"
     debug = False # do not activate sensors or motors in debug mode
 
 #**********************************************
@@ -107,16 +112,16 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            #try:
-            runAuto(sys.argv[2],params.runFullAuto)
-            #except:
-            #    exitProg()
+            try:
+                runAuto(sys.argv[2],params.runFullAuto)
+            except:
+                exitProg()
 
         if o in ("-t" , "--train"):
-            #try:
-            runTrain(sys.argv[2])
-            #except:
-            #    sys.exit(2)
+            try:
+                runTrain(sys.argv[2])
+            except:
+                sys.exit(2)
 
         if o in ("-c" , "--collect"):
             #try:
@@ -178,14 +183,11 @@ def runTrain(trainFile):
 #*************************************************
 def writeTrainFile():
     while True:
-        if params.useCamera == False:
-            s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors(params.useCamera)
-        else:
-            s,p,l,r,c,b,x,y,z,v,img = piRC_lib.readAllSensors(params.useCamera)
-            print(img)
-        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(s,p,l,r,c,b,x,y,z,v))
-        with open(params.filename, "a") as sum_file:
-            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.2f}\n'.format(s,p,l,r,c,b,x,y,z,v))
+        data = piRC_lib.readAllSensors(params.useCamera)
+        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f} Cam={10:s}'.format(\
+            data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],params.camStr))
+        with open(params.filename, "ab") as sum_file:
+            np.savetxt(sum_file, [data], fmt="%.2f", delimiter=' ', newline='\n')
 
 #*************************************************
 ''' read Train File '''
@@ -250,12 +252,18 @@ def predictDrive(clf):
     np.set_printoptions(suppress=True)
     sp = [0,0]
     if params.debug is True:
-        s,p,l,r,c,b,x,y,z,v = [-1,-1,116,117,111,158,0.224,0.108,1.004,1.5]
+        data = [-1,-1,116,117,111,158,0.224,0.108,1.004,1.5]
     else:
-        s,p,l,r,c,b,x,y,z,v = piRC_lib.readAllSensors(params.useCamera)
+        data = piRC_lib.readAllSensors(params.useCamera)
 
-    print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(s,p,l,r,c,b,x,y,z,v))
-    nowsensors = np.array([[round(l,0),round(r,0),round(c,0),round(b,0),round(x,3),round(y,3),round(z,3),round(v,2)]]).reshape(1,-1)
+    print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(\
+            data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9]))
+
+    nowsensors = np.array([[round(data[2],0),round(data[3],0),round(data[4],0),round(data[5],0),
+        round(data[6],3),round(data[7],3),round(data[8],3),round(data[9],2)]])
+
+    if params.useCamera == True:
+        nowsensors = np.append(nowsensors, data[10:]).reshape(1,-1)
 
     if nnDef.useRegressor is False:
         nowsensors = nnDef.scaler.transform(nowsensors)
