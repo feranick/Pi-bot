@@ -76,6 +76,9 @@ class nnDef:
     nnNeurons = 10  #default = 10
 
 
+#******************************************************
+''' Import hardware library if not in debug mode'''
+#******************************************************
 if params.debug == False:
         import piRC_lib
 
