@@ -6,7 +6,7 @@ setup(
     install_requires=['numpy', 'scikit-learn', 'adafruit-adxl345', 'adafruit-ads1x15', 'Pillow'],
     entry_points={'console_scripts' : ['pirc=pirc:pirc']},
     py_modules=['pirc','libpirc'],
-    version='20190924a',
+    version='20190924b',
     description='Self-driving RC car',
     long_description= """ Self-driving RC car """,
     author='Nicola Ferralis',

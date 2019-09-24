@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20190924a
+* version: 20190924b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -13,14 +13,13 @@
 print(__doc__)
 
 import numpy as np
-import sys, os.path, os, getopt, glob, csv
+import sys, os.path, os, getopt, glob, csv, joblib
 from time import sleep, time
 from os.path import exists, splitext
 from os import rename
 from datetime import datetime, date
 
 from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
 
 #***************************************************
@@ -316,11 +315,11 @@ def fullStop(type):
 #*************************************************
 def usage():
     print('\n Usage:')
-    print('\n Training (Classifier):\n  python3 piRC_ML.py -t <train file>')
-    print('\n Prediction (Classifier):\n  python3 piRC_ML.py -r <train file>')
-    print('\n Training (Regression):\n  python3 piRC_ML.py -t <train file> -R')
-    print('\n Prediction (Regression):\n  python3 piRC_ML.py -r <train file> -R')
-    print('\n Collect data from sensors into training file:\n  python3 piRC_ML.py -c')
+    print('\n Training (Classifier):\n  python3 pirc.py -t <train file>')
+    print('\n Prediction (Classifier):\n  python3 pirc.py -r <train file>')
+    print('\n Training (Regression):\n  python3 pirc.py -t <train file> -R')
+    print('\n Prediction (Regression):\n  python3 pirc.py -r <train file> -R')
+    print('\n Collect data from sensors into training file:\n  python3 pirc.py -c')
     print('\n (Separate trained models are created for regression and classification)\n')
 
     print(' Requires python 3.x. Not compatible with python 2.x\n')
