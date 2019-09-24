@@ -90,7 +90,7 @@ class nnDef:
 ''' Import hardware library if not in debug mode'''
 #******************************************************
 if params.debug == False:
-        import libpirc
+    import libpirc
 
 #**********************************************
 ''' Main '''
@@ -129,10 +129,10 @@ def main():
                 sys.exit(2)
 
         if o in ("-c" , "--collect"):
-            #try:
-            writeTrainFile()
-            #except:
-            #    exitProg()
+            try:
+                writeTrainFile()
+            except:
+                exitProg()
 
 #*************************************************
 ''' runAuto '''
@@ -189,8 +189,8 @@ def runTrain(trainFile):
 def writeTrainFile():
     while True:
         data = libpirc.readAllSensors(params.useCamera)
-        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f} Cam={10:s}'.format(\
-            data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],params.camStr))
+        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f},\
+            Cam={10:s}'.format(\data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],params.camStr))
         with open(params.filename, "ab") as sum_file:
             np.savetxt(sum_file, [data], fmt="%.2f", delimiter=' ', newline='\n')
 
