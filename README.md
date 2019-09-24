@@ -22,7 +22,7 @@
 ## Requirements
 Since it uses Python3, it requires the following packages
 
-    sudo apt-get install python3-rpi.gpio python3-dev python3-pip libopenjp2-7 libatlas-base-de libtiff5 python3-picamera
+    sudo apt-get install python3-rpi.gpio python3-dev python3-pip libopenjp2-7 libatlas-base-dev libtiff5 python3-picamera
 
 
 You would then need to install two libraries for the ADC (ADS1115) and accelerometer (ADXL345)
