@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20180112c
+* version: 20190924a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -22,6 +22,12 @@ from datetime import datetime, date
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.externals import joblib
 from sklearn.preprocessing import StandardScaler
+
+#***************************************************
+# This is needed for installation through pip
+#***************************************************
+def pirc():
+    main()
 
 #**********************************************
 ''' MultiClassReductor '''
@@ -85,7 +91,7 @@ class nnDef:
 ''' Import hardware library if not in debug mode'''
 #******************************************************
 if params.debug == False:
-        import piRC_lib
+        import libpirc
 
 #**********************************************
 ''' Main '''
@@ -183,7 +189,7 @@ def runTrain(trainFile):
 #*************************************************
 def writeTrainFile():
     while True:
-        data = piRC_lib.readAllSensors(params.useCamera)
+        data = libpirc.readAllSensors(params.useCamera)
         print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f} Cam={10:s}'.format(\
             data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],params.camStr))
         with open(params.filename, "ab") as sum_file:
@@ -254,7 +260,7 @@ def predictDrive(clf):
     if params.debug is True:
         data = [-1,-1,116,117,111,158,0.224,0.108,1.004,1.5]
     else:
-        data = piRC_lib.readAllSensors(params.useCamera)
+        data = libpirc.readAllSensors(params.useCamera)
 
     print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(\
             data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9]))
@@ -298,12 +304,12 @@ def predictDrive(clf):
 #*************************************************
 def drive(s,p):
     if params.debug is False:
-        piRC_lib.runMotor(0,s)
-        piRC_lib.runMotor(1,p)
+        libpirc.runMotor(0,s)
+        libpirc.runMotor(1,p)
 
 def fullStop(type):
     if params.debug is False:
-        piRC_lib.fullStop(type)
+        libpirc.fullStop(type)
 
 #*************************************************
 ''' Lists the program usage '''

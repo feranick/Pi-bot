@@ -3,8 +3,8 @@
 '''
 **********************************************************
 *
-* PiRC_lib
-* version: 20180112c
+* libpirc
+* version: 20190924a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
