@@ -24,10 +24,9 @@ Since it uses Python3, it requires the following packages
 
     sudo apt-get install python3-rpi.gpio python3-dev python3-pip libopenjp2-7 libatlas-base-dev libtiff5 python3-picamera
 
-
 You would then need to install two libraries for the ADC (ADS1115) and accelerometer (ADXL345)
 
-    sudo pip3 install adafruit-adxl345 adafruit-ads1x15
+    sudo pip3 install adafruit-adxl345 adafruit-ads1x15 Pillow configparser
 
 Machine learing is carried out using Sklearn, which needs the following packages:
 

@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='pirc',
     packages=find_packages(),
-    install_requires=['numpy', 'scikit-learn', 'adafruit-adxl345', 'adafruit-ads1x15', 'Pillow'],
+    install_requires=['numpy', 'scikit-learn', 'adafruit-adxl345', 'adafruit-ads1x15', 'Pillow', 'configparser'],
     entry_points={'console_scripts' : ['pirc=pirc:pirc']},
     py_modules=['pirc','libpirc'],
     version='20190924b',
