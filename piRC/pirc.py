@@ -61,7 +61,7 @@ class Conf():
             'runNN': True,
             'useRegressor': False,
             'nnSolver': 'lbfgs',  #Solver for NN lbfgs preferred for small datasets. Alternatives: 'adam' or 'sgd'
-            'nnNeurons': 20,
+            'HL': [10,],
             'nnAlwaysRetrain': False,
             'syncTimeLimit': 20, # time in seconds for NN model synchronization
             'syncTrainModel': False,
@@ -88,7 +88,7 @@ class Conf():
             self.runNN = self.conf.getboolean('Parameters','runNN')
             self.useRegressor = self.conf.getboolean('Parameters','useRegressor')
             self.nnSolver = self.conf.get('Parameters','nnSolver')
-            self.nnNeurons = self.conf.getint('Parameters','nnNeurons')
+            self.HL = eval(self.pircDef['HL'])
             self.nnAlwaysRetrain = self.conf.getboolean('Parameters','nnAlwaysRetrain')
             self.syncTimeLimit = self.conf.getint('Parameters','syncTimeLimit')
             self.syncTrainModel = self.conf.getboolean('Parameters','syncTrainModel')
@@ -284,9 +284,9 @@ def runNN(sensors, Cl, Root):
         #**********************************************
         print(' Retraining NN model...\n')
         if params.useRegressor is False:
-            clf = MLPClassifier(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=(params.nnNeurons,), random_state=1)
+            clf = MLPClassifier(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=1)
         else:
-            clf = MLPRegressor(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=(params.nnNeurons,), random_state=9)
+            clf = MLPRegressor(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=9)
         clf.fit(sensors, Y)
         joblib.dump(clf, nnTrainedData)
 
