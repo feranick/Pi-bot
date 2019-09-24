@@ -20,7 +20,7 @@ def get_image(camera, size):
     img_resized = img.resize(resized_size, Image.ANTIALIAS)
     data = np.asarray( img_resized, dtype="int32" )
     print(data.shape)
-     return data
+    return data
 
 def save_image( npdata, outfilename ) :
     img = Image.fromarray( np.asarray( np.clip(npdata,0,255), dtype="uint8"), "L" )
