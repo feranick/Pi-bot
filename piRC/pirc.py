@@ -221,6 +221,7 @@ def runTrain(trainFile):
     Cl, sensors = readTrainFile(trainFile)
     params.nnAlwaysRetrain = True
     runNN(sensors, Cl, trainFileRoot)
+    #runNNTF(sensors, Cl, trainFileRoot)
 
 #*************************************************
 ''' write training file from sensors '''
@@ -291,6 +292,79 @@ def runNN(sensors, Cl, Root):
         joblib.dump(clf, nnTrainedData)
 
     return clf
+
+#********************************************************************************
+''' Run Neural Network '''
+#********************************************************************************
+def runNNTF(sensors, Cl, Root):
+    if nnDef.useRegressor is False:
+        nnTrainedData = Root + '.nnModelC.h5'
+    else:
+        nnTrainedData = Root + '.nnModelR.h5'
+    print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + nnDef.nnSolver + ')...')
+    
+    sensors = nnDef.scaler.fit_transform(sensors)
+
+    if nnDef.useRegressor is False:
+        Y = nnDef.mlp.transform(Cl)
+    else:
+        Y = Cl
+
+    try:
+        if nnDef.nnAlwaysRetrain == False:
+            print(' Opening NN training model...\n')
+            model = keras.models.load_model(dP.model_name)
+        else:
+            raise ValueError('Force NN retraining.')
+    except:
+        #**********************************************
+        ''' Retrain data if not available'''
+        #**********************************************
+        print(' Retraining NN model...\n')
+        import tensorflow as tf
+        import h5py, pickle
+        import tensorflow.keras as keras  #tf.keras
+        tf.compat.v1.Session(config=conf)
+        
+        optim = keras.optimizers.Adam(lr=0.001, beta_1=0.9,
+               beta_2=0.999, epsilon=1e-08, decay=0.0001,
+               amsgrad=False)
+        #************************************
+        ### Build model
+        #************************************
+        model = keras.models.Sequential()
+        for i in range(len(dP.HL)):
+            model.add(keras.layers.Dense(dP.HL[i],
+                activation = 'relu',
+                input_dim=sensors.shape[1],
+                kernel_regularizer=keras.regularizers.l2(0.001)))
+            model.add(keras.layers.Dropout(0.0))
+
+        if dP.regressor:
+            model.add(keras.layers.Dense(1))
+            model.compile(loss='mse',
+            optimizer=optim,
+            metrics=['mae'])
+        else:
+            model.add(keras.layers.Dense(np.unique(totCl).size+1, activation = 'softmax'))
+            model.compile(loss='categorical_crossentropy',
+                optimizer=optim,
+                metrics=['accuracy'])
+
+        tbLog = keras.callbacks.TensorBoard(log_dir=".", histogram_freq=120,
+                batch_size=4,
+                write_graph=True, write_grads=True, write_images=True)
+        tbLogs = [tbLog]
+        log = model.fit(sensors, Y,
+            epochs=dP.epochs,
+            batch_size=dP.batch_size,
+            callbacks = tbLogs,
+            verbose=2,
+            validation_split=0.01)
+        
+        model.save(nnTrainedData)
+
+    return model
 
 #*************************************************
 ''' Predict drive pattern '''
