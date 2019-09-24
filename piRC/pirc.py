@@ -50,8 +50,8 @@ class Conf():
             self.filename = 'Training_splrcbxyzv.txt'
             self.camStr = "OFF"
     
-        scaler = StandardScaler()
-        mlp = MultiClassReductor()
+        self.scaler = StandardScaler()
+        self.mlp = MultiClassReductor()
             
     def pircDef(self):
         self.conf['Parameters'] = {
