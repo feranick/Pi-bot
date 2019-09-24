@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20190924b
+* version: 20190924d
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -13,7 +13,7 @@
 print(__doc__)
 
 import numpy as np
-import sys, os.path, os, getopt, glob, csv, joblib
+import sys, os.path, os, getopt, glob, csv, joblib, configparser
 from time import sleep, time
 from os.path import exists, splitext
 from os import rename
@@ -21,12 +21,93 @@ from datetime import datetime, date
 
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.preprocessing import StandardScaler
+import libpirc #Comment this out for debug mode.
 
 #***************************************************
 # This is needed for installation through pip
 #***************************************************
 def pirc():
     main()
+
+#************************************
+# Parameters
+#************************************
+class Conf():
+    def __init__(self):
+        confFileName = "pirc.ini"
+        self.configFile = os.getcwd()+"/"+confFileName
+        self.conf = configparser.ConfigParser()
+        self.conf.optionxform = str
+        if os.path.isfile(self.configFile) is False:
+            print(" Configuration file: \""+confFileName+"\" does not exist: Creating one.\n")
+            self.createConfig()
+        self.readConfig(self.configFile)
+        
+        if self.useCamera == True:
+            self.filename = 'Training_splrcbxyzvCam.txt'
+            self.camStr = "ON"
+        else:
+            self.filename = 'Training_splrcbxyzv.txt'
+            self.camStr = "OFF"
+    
+        scaler = StandardScaler()
+        mlp = MultiClassReductor()
+            
+    def pircDef(self):
+        self.conf['Parameters'] = {
+            'timeDelay' : .25,
+            'runFullAuto' : False,
+            'useCamera' : False,
+            'runNN': True,
+            'useRegressor': False,
+            'nnSolver': 'lbfgs',  #Solver for NN lbfgs preferred for small datasets. Alternatives: 'adam' or 'sgd'
+            'nnNeurons': 20,
+            'nnAlwaysRetrain': False,
+            'syncTimeLimit': 20, # time in seconds for NN model synchronization
+            'syncTrainModel': False,
+            'saveNewTrainingData': False,
+        
+            }
+    def sysDef(self):
+        self.conf['System'] = {
+            'debug': False, # do not activate sensors or motors in debug mode
+            #'useTFKeras' : False,
+            #'setMaxMem' : False,   # TensorFlow 2.0
+            #'maxMem' : 4096,       # TensorFlow 2.0
+            }
+
+    def readConfig(self,configFile):
+        try:
+            self.conf.read(configFile)
+            self.pircDef = self.conf['Parameters']
+            self.sysDef = self.conf['System']
+            
+            self.timeDelay = self.conf.getfloat('Parameters','timeDelay')
+            self.runFullAuto = self.conf.getboolean('Parameters','runFullAuto')
+            self.useCamera = self.conf.getboolean('Parameters','useCamera')
+            self.runNN = self.conf.getboolean('Parameters','runNN')
+            self.useRegressor = self.conf.getboolean('Parameters','useRegressor')
+            self.nnSolver = self.conf.get('Parameters','nnSolver')
+            self.nnNeurons = self.conf.getint('Parameters','nnNeurons')
+            self.nnAlwaysRetrain = self.conf.getboolean('Parameters','nnAlwaysRetrain')
+            self.syncTimeLimit = self.conf.getint('Parameters','syncTimeLimit')
+            self.syncTrainModel = self.conf.getboolean('Parameters','syncTrainModel')
+            self.saveNewTrainingData = self.conf.getboolean('Parameters','saveNewTrainingData')
+            
+            self.debug = self.conf.getboolean('System','debug')
+            
+        except:
+            print(" Error in reading configuration file. Please check it\n")
+
+    # Create configuration file
+    def createConfig(self):
+        try:
+            self.pircDef()
+            self.sysDef()
+            with open(self.configFile, 'w') as configfile:
+                self.conf.write(configfile)
+        except:
+            print("Error in creating configuration file")
 
 #**********************************************
 ''' MultiClassReductor '''
@@ -46,56 +127,12 @@ class MultiClassReductor():
     def inverse_transform(self,a):
         return self.totalClass[int(a)]
 
-#**********************************************
-''' General parameters'''
-#**********************************************
-class params:
-    timeDelay = 0.25
-
-    runFullAuto = False
-    useCamera = False
-    
-    if useCamera == True:
-        filename = 'Training_splrcbxyzvCam.txt'
-        camStr = "ON"
-    else:
-        filename = 'Training_splrcbxyzv.txt'
-        camStr = "OFF"
-    debug = False # do not activate sensors or motors in debug mode
-
-#**********************************************
-''' Neural Networks'''
-#**********************************************
-class nnDef:
-    runNN = True
-    nnAlwaysRetrain = False
-    
-    syncTimeLimit = 20  # time in seconds for NN model synchronization
-    syncTrainModel = False
-    saveNewTrainingData = False
-    
-    useRegressor = False
-
-    scaler = StandardScaler()
-    mlp = MultiClassReductor()
-    
-    ''' Solver for NN
-        lbfgs preferred for small datasets
-        (alternatives: 'adam' or 'sgd') '''
-    nnSolver = 'lbfgs'
-    nnNeurons = 10  #default = 10
-
-
-#******************************************************
-''' Import hardware library if not in debug mode'''
-#******************************************************
-if params.debug == False:
-    import libpirc
 
 #**********************************************
 ''' Main '''
 #**********************************************
 def main():
+    params = Conf()
     try:
         opts, args = getopt.getopt(sys.argv[1:], "rtch:", ["run", "train", "collect", "help"])
     except:
@@ -109,11 +146,11 @@ def main():
     try:
         sys.argv[3]
         if sys.argv[3] in ("-C", "--Classifier"):
-            nnDef.useRegressor = False
+            params.useRegressor = False
         elif sys.argv[3] in ("-R", "--Regressor"):
-            nnDef.useRegressor = True
+            params.useRegressor = True
     except:
-        nnDef.useRegressor = False
+        params.useRegressor = False
 
     for o, a in opts:
         if o in ("-r" , "--run"):
@@ -139,13 +176,14 @@ def main():
 ''' Use ML models to predict steer and power '''
 #*************************************************
 def runAuto(trainFile, type):
+    params = Conf()
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     clf = runNN(sensors, Cl, trainFileRoot)
     fullStop(False)
     syncTime = time()
     while True:
-        if time() - syncTime > nnDef.syncTimeLimit and nnDef.syncTrainModel == True:
+        if time() - syncTime > params.syncTimeLimit and params.syncTrainModel == True:
             print(" Reloading NN model...")
             clf = runNN(sensors, Cl, trainFileRoot)
             print(" Synchronizing NN model...\n")
@@ -178,21 +216,21 @@ def runAuto(trainFile, type):
 ''' Use ML models to predict steer and power '''
 #*************************************************
 def runTrain(trainFile):
+    params = Conf()
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
-    nnDef.nnAlwaysRetrain = True
+    params.nnAlwaysRetrain = True
     runNN(sensors, Cl, trainFileRoot)
 
 #*************************************************
 ''' write training file from sensors '''
 #*************************************************
 def writeTrainFile():
+    params = Conf()
     while True:
         data = libpirc.readAllSensors(params.useCamera)
-        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, '+\
-            'C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, '+\
-            'V={9:.2f}, Cam={10:s}'.format(data[0],data[1],data[2],data[3],\
-            data[4],data[5],data[6],data[7],data[8],data[9],params.camStr))
+        print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}, Cam={10:s}'.format(\
+        data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],params.camStr))
         with open(params.filename, "ab") as sum_file:
             np.savetxt(sum_file, [data], fmt="%.2f", delimiter=' ', newline='\n')
 
@@ -200,6 +238,7 @@ def writeTrainFile():
 ''' read Train File '''
 #*************************************************
 def readTrainFile(trainFile):
+    params = Conf()
     try:
         with open(trainFile, 'r') as f:
             M = np.loadtxt(f, unpack =False)
@@ -218,21 +257,22 @@ def readTrainFile(trainFile):
 ''' Run Neural Network '''
 #********************************************************************************
 def runNN(sensors, Cl, Root):
-    if nnDef.useRegressor is False:
+    params = Conf()
+    if params.useRegressor is False:
         nnTrainedData = Root + '.nnModelC.pkl'
     else:
         nnTrainedData = Root + '.nnModelR.pkl'
-    print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + nnDef.nnSolver + ')...')
+    print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + params.nnSolver + ')...')
     
-    sensors = nnDef.scaler.fit_transform(sensors)
+    sensors = params.scaler.fit_transform(sensors)
 
-    if nnDef.useRegressor is False:
-        Y = nnDef.mlp.transform(Cl)
+    if params.useRegressor is False:
+        Y = params.mlp.transform(Cl)
     else:
         Y = Cl
 
     try:
-        if nnDef.nnAlwaysRetrain == False:
+        if params.nnAlwaysRetrain == False:
             with open(nnTrainedData):
                 print(' Opening NN training model...\n')
                 clf = joblib.load(nnTrainedData)
@@ -243,10 +283,10 @@ def runNN(sensors, Cl, Root):
         ''' Retrain data if not available'''
         #**********************************************
         print(' Retraining NN model...\n')
-        if nnDef.useRegressor is False:
-            clf = MLPClassifier(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=1)
+        if params.useRegressor is False:
+            clf = MLPClassifier(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=(params.nnNeurons,), random_state=1)
         else:
-            clf = MLPRegressor(solver=nnDef.nnSolver, alpha=1e-5, hidden_layer_sizes=(nnDef.nnNeurons,), random_state=9)
+            clf = MLPRegressor(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=(params.nnNeurons,), random_state=9)
         clf.fit(sensors, Y)
         joblib.dump(clf, nnTrainedData)
 
@@ -256,6 +296,7 @@ def runNN(sensors, Cl, Root):
 ''' Predict drive pattern '''
 #*************************************************
 def predictDrive(clf):
+    params = Conf()
     np.set_printoptions(suppress=True)
     sp = [0,0]
     if params.debug is True:
@@ -272,11 +313,11 @@ def predictDrive(clf):
     if params.useCamera == True:
         nowsensors = np.append(nowsensors, data[10:]).reshape(1,-1)
 
-    if nnDef.useRegressor is False:
-        nowsensors = nnDef.scaler.transform(nowsensors)
+    if params.useRegressor is False:
+        nowsensors = params.scaler.transform(nowsensors)
         try:
-            sp[0] = nnDef.mlp.inverse_transform(clf.predict(nowsensors)[0])[0]
-            sp[1] = nnDef.mlp.inverse_transform(clf.predict(nowsensors)[0])[1]
+            sp[0] = params.mlp.inverse_transform(clf.predict(nowsensors)[0])[0]
+            sp[1] = params.mlp.inverse_transform(clf.predict(nowsensors)[0])[1]
         except:
             sp = [0,0]
         print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
@@ -294,7 +335,7 @@ def predictDrive(clf):
                 sp[k] = 0
         print('\033[1m' + ' Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
         
-    if nnDef.saveNewTrainingData is True:
+    if params.saveNewTrainingData is True:
         with open(params.filename, "a") as sum_file:
             sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z,v))
 
@@ -304,12 +345,12 @@ def predictDrive(clf):
 ''' Drive '''
 #*************************************************
 def drive(s,p):
-    if params.debug is False:
+    if Conf().debug is False:
         libpirc.runMotor(0,s)
         libpirc.runMotor(1,p)
 
 def fullStop(type):
-    if params.debug is False:
+    if Conf().debug is False:
         libpirc.fullStop(type)
 
 #*************************************************
