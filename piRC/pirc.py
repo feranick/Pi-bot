@@ -400,7 +400,7 @@ def runNN_TF(sensors, Cl, Root):
             model.add(keras.layers.Dropout(params.drop))
         
         if params.useRegressor:
-            model.add(keras.layers.Dense(1))
+            model.add(keras.layers.Dense(2))
             model.compile(loss='mse',
             optimizer=optim,
             metrics=['mae'])
