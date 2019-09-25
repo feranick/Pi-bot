@@ -50,6 +50,13 @@ class Conf():
         else:
             self.filename = 'Training_splrcbxyzv.txt'
             self.camStr = "OFF"
+            
+        if self.ML_framework == "SKLearn":
+            self.runNN_SK = True
+            self.runNN_TF = False
+        if self.ML_framework == "TF":
+            self.runNN_SK = False
+            self.runNN_TF = True
     
         self.scaler = StandardScaler()
         self.mlp = MultiClassReductor()
@@ -63,17 +70,16 @@ class Conf():
             'syncTimeLimit': 20, # time in seconds for NN model synchronization
             'syncTrainModel': False,
             'saveNewTrainingData': False,
+            'ML_framework': 'SKLearn',     # Use either: SKLearn (for scikit-learn) or TF (for TensorFlow)
             'useRegressor': False,
             'HL': [10,],
             }
             
         self.conf['SKLearn'] = {
-            'runNN_SK': True,
             'nnSolver': 'lbfgs',  #Solver for NN lbfgs preferred for small datasets. Alternatives: 'adam' or 'sgd'
             }
             
         self.conf['TF'] = {
-            'runNN_TF': False,
             'l_rate' : 0.001,
             'l_rdecay' : 1e-4,
             'drop' : 0,
@@ -107,13 +113,12 @@ class Conf():
             self.syncTimeLimit = self.conf.getint('Parameters','syncTimeLimit')
             self.syncTrainModel = self.conf.getboolean('Parameters','syncTrainModel')
             self.saveNewTrainingData = self.conf.getboolean('Parameters','saveNewTrainingData')
+            self.ML_framework = self.conf.get('Parameters','ML_framework')
             self.useRegressor = self.conf.getboolean('Parameters','useRegressor')
             self.HL = eval(self.pircDef['HL'])
             
-            self.runNN_SK = self.conf.getboolean('SKLearn','runNN_SK')
             self.nnSolver = self.conf.get('SKLearn','nnSolver')
             
-            self.runNN_TF = self.conf.getboolean('TF','runNN_TF')
             self.l_rate = self.conf.getfloat('TF','l_rate')
             self.l_rdecay = self.conf.getfloat('TF','l_rdecay')
             self.drop = self.conf.getfloat('TF','drop')
@@ -206,6 +211,28 @@ def main():
                 exitProg()
 
 #*************************************************
+''' seletMLFramework '''
+''' Select and initialize appropriate framework '''
+#*************************************************
+def seletMLLoadTrain(self, sensors, Cl, trainFileRoot):
+    if params.runNN_SK:
+        print(" Using SKLearn")
+        model = runNN_SK(sensors, Cl, trainFileRoot)
+    if params.runNN_TF:
+        print(" Using TensorFlow")
+        model = runNN_TF(sensors, Cl, trainFileRoot)
+    return model
+    
+def seletMLPredict(self, model):
+    if params.runNN_SK:
+        print(" Using SKLearn")
+        s, p = predictDrive_SK(model)
+    if params.runNN_TF:
+        print(" Using TensorFlow")
+        s, p = predictDrive_TF(model)
+    return s,p
+
+#*************************************************
 ''' runAuto '''
 ''' Use ML models to predict steer and power '''
 #*************************************************
@@ -213,20 +240,20 @@ def runAuto(trainFile, type):
     params = Conf()
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
-    clf = runNN(sensors, Cl, trainFileRoot)
+    model = seletMLFramework(sensors, Cl, trainFileRoot)
     fullStop(False)
     syncTime = time()
     while True:
         if time() - syncTime > params.syncTimeLimit and params.syncTrainModel == True:
             print(" Reloading NN model...")
-            clf = runNN(sensors, Cl, trainFileRoot)
+            model = seletMLFramework(sensors, Cl, trainFileRoot)
             print(" Synchronizing NN model...\n")
             os.system("./syncTFile.sh " + trainFileRoot + " &")
             syncTime = time()
         
         if type == False:
             print(" Running \033[1mPartial Auto\033[0m Mode\n")
-            s, p = predictDrive(clf)
+            s, p = seletMLPredict(model)
             drive(s,p)
             sleep(params.timeDelay)
         else:
@@ -234,7 +261,7 @@ def runAuto(trainFile, type):
             dt=0
             t1=time()
             while dt < 0.5:
-                s, p = predictDrive(clf)
+                s, p = seletMLPredict(model)
                 if p != 0:
                     dt = 0
                     drive(s,p)
@@ -307,7 +334,7 @@ def runNN_SK(sensors, Cl, Root):
         if params.nnAlwaysRetrain == False:
             with open(nnTrainedData):
                 print(' Opening NN training model...\n')
-                clf = joblib.load(nnTrainedData)
+                model = joblib.load(nnTrainedData)
         else:
             raise ValueError('Force NN retraining.')
     except:
@@ -324,13 +351,13 @@ def runNN_SK(sensors, Cl, Root):
             Y = Cl
         
         if params.useRegressor is False:
-            clf = MLPClassifier(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=1)
+            model = MLPClassifier(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=1)
         else:
-            clf = MLPRegressor(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=9)
-        clf.fit(sensors, Y)
-        joblib.dump(clf, nnTrainedData)
+            model = MLPRegressor(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=9)
+        model.fit(sensors, Y)
+        joblib.dump(model, nnTrainedData)
 
-    return clf
+    return model
 
 #********************************************************************************
 ''' Run Neural Network '''
@@ -361,7 +388,6 @@ def runNN_TF(sensors, Cl, Root):
         #tf.compat.v1.Session(config=conf)
         
         sensors = params.scaler.fit_transform(sensors)
-        print(params.mlp.num_classes_())
         
         if params.useRegressor is False:
             Y = params.mlp.transform(Cl)
@@ -418,7 +444,7 @@ def runNN_TF(sensors, Cl, Root):
 #*************************************************
 ''' Predict drive pattern '''
 #*************************************************
-def predictDrive(clf):
+def predictDrive_SK(model):
     params = Conf()
     np.set_printoptions(suppress=True)
     sp = [0,0]
@@ -439,15 +465,64 @@ def predictDrive(clf):
     if params.useRegressor is False:
         nowsensors = params.scaler.transform(nowsensors)
         try:
-            sp[0] = params.mlp.inverse_transform(clf.predict(nowsensors)[0])[0]
-            sp[1] = params.mlp.inverse_transform(clf.predict(nowsensors)[0])[1]
+            sp[0] = params.mlp.inverse_transform(model.predict(nowsensors)[0])[0]
+            sp[1] = params.mlp.inverse_transform(model.predict(nowsensors)[0])[1]
         except:
             sp = [0,0]
         print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
-        prob = clf.predict_proba(nowsensors)[0].tolist()
+        prob = model.predict_proba(nowsensors)[0].tolist()
         print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
     else:
-        sp = clf.predict(nowsensors)[0]
+        sp = model.predict(nowsensors)[0]
+        print('\033[1m' + '\n Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
+        for k in range(2):
+            if sp[k] >= 1:
+                sp[k] = 1
+            elif sp[k] <= -1:
+                sp[k] = -1
+            else:
+                sp[k] = 0
+        print('\033[1m' + ' Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
+        
+    if params.saveNewTrainingData is True:
+        with open(params.filename, "a") as sum_file:
+            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z,v))
+
+    return sp[0], sp[1]
+    
+#*************************************************
+''' Predict drive pattern '''
+#*************************************************
+def predictDrive_TF(model):
+    params = Conf()
+    np.set_printoptions(suppress=True)
+    sp = [0,0]
+    if params.debug is True:
+        data = [-1,-1,116,117,111,158,0.224,0.108,1.004,1.5]
+    else:
+        data = libpirc.readAllSensors(params.useCamera)
+
+    print(' S={0:.0f}, P={1:.0f}, L={2:.0f}, R={3:.0f}, C={4:.0f}, B={5:.0f}, X={6:.3f}, Y={7:.3f}, Z={8:.3f}, V={9:.2f}'.format(\
+            data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9]))
+
+    nowsensors = np.array([[round(data[2],0),round(data[3],0),round(data[4],0),round(data[5],0),
+        round(data[6],3),round(data[7],3),round(data[8],3),round(data[9],2)]])
+
+    if params.useCamera == True:
+        nowsensors = np.append(nowsensors, data[10:]).reshape(1,-1)
+
+    if params.useRegressor is False:
+        nowsensors = params.scaler.transform(nowsensors)
+        try:
+            sp[0] = params.mlp.inverse_transform(model.predict(nowsensors)[0])[0]
+            sp[1] = params.mlp.inverse_transform(model.predict(nowsensors)[0])[1]
+        except:
+            sp = [0,0]
+        print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
+        prob = model.predict_proba(nowsensors)[0].tolist()
+        print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
+    else:
+        sp = model.predict(nowsensors)[0]
         print('\033[1m' + '\n Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         for k in range(2):
             if sp[k] >= 1:
