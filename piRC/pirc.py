@@ -2,12 +2,9 @@
 # -*- coding: utf-8 -*-
 '''
 **********************************************************
-*
 * PiRC - Self-driving RC car via Machine Learning
 * version: 20190925d
-*
 * By: Nicola Ferralis <feranick@hotmail.com>
-*
 ***********************************************************
 '''
 print(__doc__)
@@ -182,15 +179,6 @@ def main():
         usage()
         sys.exit(2)
 
-    try:
-        sys.argv[3]
-        if sys.argv[3] in ("-C", "--Classifier"):
-            params.useRegressor = False
-        elif sys.argv[3] in ("-R", "--Regressor"):
-            params.useRegressor = True
-    except:
-        params.useRegressor = False
-
     for o, a in opts:
         if o in ("-r" , "--run"):
             try:
@@ -315,17 +303,20 @@ def readTrainFile(trainFile):
 #********************************************************************************
 def runNN_SK(sensors, Cl, Root):
     params = Conf()
-    if params.useRegressor is False:
-        nnTrainedData = Root + '.nnModelC.pkl'
-    else:
+    if params.useRegressor:
         nnTrainedData = Root + '.nnModelR.pkl'
-    print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + params.nnSolver + ')...\n')
+        print(' Running multi-layer perceptron (SKLearn) - Regression')
+    else:
+        nnTrainedData = Root + '.nnModelC.pkl'
+        print(' Running multi-layer perceptron (SKLearn) - Classification')
+    print(' Training file: ' + nnTrainedData + '\n')
 
     try:
         if params.nnAlwaysRetrain == False:
             with open(nnTrainedData):
                 print(' Opening NN training model...\n')
                 model = joblib.load(nnTrainedData)
+            print("\n Done. Training model loaded\n")
         else:
             raise ValueError('Force NN retraining.')
     except:
@@ -347,6 +338,8 @@ def runNN_SK(sensors, Cl, Root):
             model = MLPRegressor(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=9)
         model.fit(sensors, Y)
         joblib.dump(model, nnTrainedData)
+    
+    print("\n Done. Training model saved in: ",nnTrainedData,"\n")
 
     return model
 
@@ -355,11 +348,13 @@ def runNN_SK(sensors, Cl, Root):
 #********************************************************************************
 def runNN_TF(sensors, Cl, Root):
     params = Conf()
-    if params.useRegressor is False:
-        nnTrainedData = Root + '.nnModelC.h5'
-    else:
+    if params.useRegressor:
         nnTrainedData = Root + '.nnModelR.h5'
-    print(' Running Neural Network: multi-layer perceptron (MLP) - Using TensorFlow...\n')
+        print(' Running multi-layer perceptron (TensorFlow) - Regression')
+    else:
+        nnTrainedData = Root + '.nnModelC.h5'
+        print(' Running multi-layer perceptron (TensorFlow) - Classification')
+    print(' Training file: ' + nnTrainedData + '\n')
 
     try:
         import tensorflow as tf
@@ -368,7 +363,7 @@ def runNN_TF(sensors, Cl, Root):
         if params.nnAlwaysRetrain == False:
             print(' Opening NN training model...\n')
             model = keras.models.load_model(nnTrainedData)
-            print("\nDone. Training model loaded\n")
+            print("\n Done. Training model loaded\n")
         else:
             raise ValueError('Force NN retraining.')
     except:
@@ -428,7 +423,7 @@ def runNN_TF(sensors, Cl, Root):
                 
         model.save(nnTrainedData)
         
-        print("\nDone. Training model saved in: ",nnTrainedData,"\n")
+        print("\n Done. Training model saved in: ",nnTrainedData,"\n")
 
     return model
 
@@ -455,7 +450,7 @@ def predictDrive(model):
 
     if params.useRegressor:
         sp = model.predict(nowsensors)[0]
-        print('\033[1m' + '\n Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
+        print('\033[1m' + '\n Predicted regression value = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         for k in range(2):
             if sp[k] >= 1:
                 sp[k] = 1
@@ -463,7 +458,7 @@ def predictDrive(model):
                 sp[k] = -1
             else:
                 sp[k] = 0
-        print('\033[1m' + ' Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
+        print('\033[1m' + ' Predicted regression value = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
     else:
         nowsensors = params.scaler.transform(nowsensors)
         try:
@@ -481,7 +476,7 @@ def predictDrive(model):
             sp = [0,0]
             prob = 0
             
-        print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
+        print('\033[1m' + '\n Predicted classification value = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         print(' (probability = ' + str(predProb) + '%)\033[0m\n')
         
     if params.saveNewTrainingData is True:
@@ -508,10 +503,8 @@ def fullStop(type):
 #*************************************************
 def usage():
     print('\n Usage:')
-    print('\n Training (Classifier):\n  python3 pirc.py -t <train file>')
-    print('\n Prediction (Classifier):\n  python3 pirc.py -r <train file>')
-    print('\n Training (Regression):\n  python3 pirc.py -t <train file> -R')
-    print('\n Prediction (Regression):\n  python3 pirc.py -r <train file> -R')
+    print('\n Training:\n  python3 pirc.py -t <train file>')
+    print('\n Prediction:\n  python3 pirc.py -r <train file>')
     print('\n Collect data from sensors into training file:\n  python3 pirc.py -c')
     print('\n (Separate trained models are created for regression and classification)\n')
 
