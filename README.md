@@ -38,25 +38,25 @@ Alternatively and only when used with a Raspberry Pi 3, TensorFlow can be used i
     sudo pip3 install tensorflow
 
 ## Installation
-When inside teh folder Pi-bot/pirc from the command line:
+When inside teh folder `Pi-bot/piRC` from the command line:
 
     python3 setup.bdist_wheel
     sudo pip3 install --upgrade dist/pirc-xxxxxxxx-py3-none-any.whl  
     
 You can also run the software directly from the folder (although it is discouraged).
     
-- Upon booting Raspbian, the motors may not be responsive due to some GPIO channels not being properly initialized. Use (piRC/other/pirc_init.py) to initialize them.
+- Upon booting Raspbian, the motors may not be responsive due to some GPIO channels not being properly initialized. Use (`piRC/other/pirc_init.py`) to initialize them.
 
 ## Usage
 ### piRC (deep learning neural networks)
-All required parameters for ML and for the RC are included into `pirc.ini` which is included in Pi-bot/pirc. 
+All required parameters for ML and for the RC are included into `pirc.ini` which is included in Pi-bot/pirc. If not present, a default file is created upon launching the software.
  
 This software (piRC/machine_learning/piRC_ML.py) is designed to accomplish three main tasks
-- **Collection mode (CM)** Collect sensor data and save it into what will be a training file. When the software is operated with CM, the user is supposed to operate the RC in fully manual mode (i.e. using the original remote control. You can stop the collection by exiting with CTRL+C. The result is a file ("Training_splrcbxyz.txt") with sensor readings that are ready for machine training. Examples are provided in piRC/piRC_ML/Training (it is strongly recommended to create your own). CM mode runs using this command:
+- **Collection mode (CM)** Collect sensor data and save it into what will be a training file. When the software is operated with CM, the user is supposed to operate the RC in fully manual mode (i.e. using the original remote control. You can stop the collection by exiting with CTRL+C. The result is a file (`Training_splrcbxyz.txt`) with sensor readings that are ready for machine training. Examples are provided in `piRC/piRC_ML/Training` (it is strongly recommended to create your own). CM mode runs using this command:
 
     `pirc -c`
 
-- **Training mode (TM)** Using the training file (for example "Training_splrcbxyz.txt"), a neural network training model is created and saved with the extension ".nnModelC.pkl". Training can be conducted in the Rpi within the RC car itself, or in any other computer running python and related libraries. This usually is much much faster. TM mode runs using this command:
+- **Training mode (TM)** Using the training file (for example `Training_splrcbxyz.txt`), a neural network training model is created and saved with the extension `.nnModelC.pkl`. Training can be conducted in the Rpi within the RC car itself, or in any other computer running python and related libraries. This usually is much much faster. TM mode runs using this command:
 
     `pirc -t <training file>`
 
