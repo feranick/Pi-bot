@@ -4,7 +4,7 @@
 **********************************************************
 *
 * libpirc
-* version: 20190924d
+* version: 20190925b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *

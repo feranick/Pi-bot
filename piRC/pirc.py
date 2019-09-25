@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20190924d
+* version: 20190925b
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -58,41 +58,69 @@ class Conf():
             'timeDelay' : .25,
             'runFullAuto' : False,
             'useCamera' : False,
-            'runNN': True,
-            'useRegressor': False,
-            'nnSolver': 'lbfgs',  #Solver for NN lbfgs preferred for small datasets. Alternatives: 'adam' or 'sgd'
-            'HL': [10,],
             'nnAlwaysRetrain': False,
             'syncTimeLimit': 20, # time in seconds for NN model synchronization
             'syncTrainModel': False,
             'saveNewTrainingData': False,
-        
+            'useRegressor': False,
+            'HL': [10,],
             }
-    def sysDef(self):
+            
+        self.conf['SKLearn'] = {
+            'runNN_SK': True,
+            'nnSolver': 'lbfgs',  #Solver for NN lbfgs preferred for small datasets. Alternatives: 'adam' or 'sgd'
+            }
+            
+        self.conf['TF'] = {
+            'runNN_TF': False,
+            'l_rate' : 0.001,
+            'l_rdecay' : 1e-4,
+            'drop' : 0,
+            'l2' : 1e-4,
+            'epochs' : 100,
+            'cv_split' : 0.01,
+            'fullSizeBatch' : True,
+            'batch_size' : 64,
+            }
+            
         self.conf['System'] = {
             'debug': False, # do not activate sensors or motors in debug mode
             #'useTFKeras' : False,
             #'setMaxMem' : False,   # TensorFlow 2.0
             #'maxMem' : 4096,       # TensorFlow 2.0
             }
+            
 
     def readConfig(self,configFile):
         try:
             self.conf.read(configFile)
             self.pircDef = self.conf['Parameters']
+            self.sklearnDef = self.conf['SKLearn']
+            self.TF = self.conf['TF']
             self.sysDef = self.conf['System']
             
             self.timeDelay = self.conf.getfloat('Parameters','timeDelay')
             self.runFullAuto = self.conf.getboolean('Parameters','runFullAuto')
             self.useCamera = self.conf.getboolean('Parameters','useCamera')
-            self.runNN = self.conf.getboolean('Parameters','runNN')
-            self.useRegressor = self.conf.getboolean('Parameters','useRegressor')
-            self.nnSolver = self.conf.get('Parameters','nnSolver')
-            self.HL = eval(self.pircDef['HL'])
             self.nnAlwaysRetrain = self.conf.getboolean('Parameters','nnAlwaysRetrain')
             self.syncTimeLimit = self.conf.getint('Parameters','syncTimeLimit')
             self.syncTrainModel = self.conf.getboolean('Parameters','syncTrainModel')
             self.saveNewTrainingData = self.conf.getboolean('Parameters','saveNewTrainingData')
+            self.useRegressor = self.conf.getboolean('Parameters','useRegressor')
+            self.HL = eval(self.pircDef['HL'])
+            
+            self.runNN_SK = self.conf.getboolean('SKLearn','runNN_SK')
+            self.nnSolver = self.conf.get('SKLearn','nnSolver')
+            
+            self.runNN_TF = self.conf.getboolean('TF','runNN_TF')
+            self.l_rate = self.conf.getfloat('TF','l_rate')
+            self.l_rdecay = self.conf.getfloat('TF','l_rdecay')
+            self.drop = self.conf.getfloat('TF','drop')
+            self.l2 = self.conf.getfloat('TF','l2')
+            self.epochs = self.conf.getint('TF','epochs')
+            self.cv_split = self.conf.getfloat('TF','cv_split')
+            self.fullSizeBatch = self.conf.getboolean('TF','fullSizeBatch')
+            self.batch_size = self.conf.getint('TF','batch_size')
             
             self.debug = self.conf.getboolean('System','debug')
             
@@ -103,7 +131,6 @@ class Conf():
     def createConfig(self):
         try:
             self.pircDef()
-            self.sysDef()
             with open(self.configFile, 'w') as configfile:
                 self.conf.write(configfile)
         except:
@@ -126,6 +153,9 @@ class MultiClassReductor():
     
     def inverse_transform(self,a):
         return self.totalClass[int(a)]
+        
+    def classes_(self):
+        return self.totalClass
 
 
 #**********************************************
@@ -160,10 +190,10 @@ def main():
                 exitProg()
 
         if o in ("-t" , "--train"):
-            try:
-                runTrain(sys.argv[2])
-            except:
-                sys.exit(2)
+            #try:
+            runTrain(sys.argv[2])
+            #except:
+            #    exitProg()
 
         if o in ("-c" , "--collect"):
             try:
@@ -220,8 +250,12 @@ def runTrain(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     params.nnAlwaysRetrain = True
-    runNN(sensors, Cl, trainFileRoot)
-    #runNNTF(sensors, Cl, trainFileRoot)
+    if params.runNN_SK:
+        print(" Using SKlearn")
+        runNN_SK(sensors, Cl, trainFileRoot)
+    if params.runNN_TF:
+        print(" Using TensorFlow")
+        runNN_TF(sensors, Cl, trainFileRoot)
 
 #*************************************************
 ''' write training file from sensors '''
@@ -257,7 +291,7 @@ def readTrainFile(trainFile):
 #********************************************************************************
 ''' Run Neural Network '''
 #********************************************************************************
-def runNN(sensors, Cl, Root):
+def runNN_SK(sensors, Cl, Root):
     params = Conf()
     if params.useRegressor is False:
         nnTrainedData = Root + '.nnModelC.pkl'
@@ -269,6 +303,7 @@ def runNN(sensors, Cl, Root):
 
     if params.useRegressor is False:
         Y = params.mlp.transform(Cl)
+        #print(params.mlp.classes_())
     else:
         Y = Cl
 
@@ -296,24 +331,30 @@ def runNN(sensors, Cl, Root):
 #********************************************************************************
 ''' Run Neural Network '''
 #********************************************************************************
-def runNNTF(sensors, Cl, Root):
-    if nnDef.useRegressor is False:
+def runNN_TF(sensors, Cl, Root):
+    params = Conf()
+    if params.useRegressor is False:
         nnTrainedData = Root + '.nnModelC.h5'
     else:
         nnTrainedData = Root + '.nnModelR.h5'
-    print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + nnDef.nnSolver + ')...')
+    print(' Running Neural Network: multi-layer perceptron (MLP) - Using TensorFlow...')
     
-    sensors = nnDef.scaler.fit_transform(sensors)
+    sensors = params.scaler.fit_transform(sensors)
 
-    if nnDef.useRegressor is False:
-        Y = nnDef.mlp.transform(Cl)
+    if params.useRegressor is False:
+        Y = params.mlp.transform(Cl)
+        #print(params.mlp.classes_())
     else:
         Y = Cl
+    print(Y)
 
     try:
-        if nnDef.nnAlwaysRetrain == False:
+        import tensorflow as tf
+        import h5py, pickle
+        import tensorflow.keras as keras  #tf.keras
+        if params.nnAlwaysRetrain == False:
             print(' Opening NN training model...\n')
-            model = keras.models.load_model(dP.model_name)
+            model = keras.models.load_model(nnTrainedData)
         else:
             raise ValueError('Force NN retraining.')
     except:
@@ -321,48 +362,55 @@ def runNNTF(sensors, Cl, Root):
         ''' Retrain data if not available'''
         #**********************************************
         print(' Retraining NN model...\n')
-        import tensorflow as tf
-        import h5py, pickle
-        import tensorflow.keras as keras  #tf.keras
-        tf.compat.v1.Session(config=conf)
+        #tf.compat.v1.Session(config=conf)
         
-        optim = keras.optimizers.Adam(lr=0.001, beta_1=0.9,
-               beta_2=0.999, epsilon=1e-08, decay=0.0001,
-               amsgrad=False)
+        if params.fullSizeBatch == True:
+            params.batch_size = sensors.shape[0]
+                    
+        optim = keras.optimizers.Adam(lr=params.l_rate, beta_1=0.9,
+        beta_2=0.999, epsilon=1e-08, decay=params.l_rdecay,
+        amsgrad=False)
+        
         #************************************
         ### Build model
         #************************************
         model = keras.models.Sequential()
-        for i in range(len(dP.HL)):
-            model.add(keras.layers.Dense(dP.HL[i],
+        for i in range(len(params.HL)):
+            model.add(keras.layers.Dense(params.HL[i],
                 activation = 'relu',
                 input_dim=sensors.shape[1],
-                kernel_regularizer=keras.regularizers.l2(0.001)))
-            model.add(keras.layers.Dropout(0.0))
-
-        if dP.regressor:
+                kernel_regularizer=keras.regularizers.l2(params.l2)))
+            model.add(keras.layers.Dropout(params.drop))
+        
+        if params.useRegressor:
             model.add(keras.layers.Dense(1))
             model.compile(loss='mse',
             optimizer=optim,
             metrics=['mae'])
         else:
-            model.add(keras.layers.Dense(np.unique(totCl).size+1, activation = 'softmax'))
+            model.add(keras.layers.Dense(np.unique(Y).size+1, activation = 'softmax'))
             model.compile(loss='categorical_crossentropy',
                 optimizer=optim,
                 metrics=['accuracy'])
-
+    
         tbLog = keras.callbacks.TensorBoard(log_dir=".", histogram_freq=120,
-                batch_size=4,
+                batch_size=params.batch_size,
                 write_graph=True, write_grads=True, write_images=True)
         tbLogs = [tbLog]
+        
+        print(1)
+        
         log = model.fit(sensors, Y,
-            epochs=dP.epochs,
-            batch_size=dP.batch_size,
+            epochs=params.epochs,
+            batch_size=params.batch_size,
             callbacks = tbLogs,
-            verbose=2,
-            validation_split=0.01)
+            verbose=2)
+        
+        print(4)
         
         model.save(nnTrainedData)
+        
+        print("Done")
 
     return model
 
