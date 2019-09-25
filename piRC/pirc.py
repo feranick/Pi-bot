@@ -84,7 +84,7 @@ class Conf():
             'l_rdecay' : 1e-4,
             'drop' : 0,
             'l2' : 1e-4,
-            'epochs' : 100,
+            'epochs' : 1000,
             'cv_split' : 0.01,
             'fullSizeBatch' : True,
             'batch_size' : 64,
