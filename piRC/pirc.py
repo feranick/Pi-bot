@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20190925c
+* version: 20190925d
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -453,17 +453,7 @@ def predictDrive(model):
     if params.useCamera == True:
         nowsensors = np.append(nowsensors, data[10:]).reshape(1,-1)
 
-    if params.useRegressor is False:
-        nowsensors = params.scaler.transform(nowsensors)
-        try:
-            sp[0] = params.mlp.inverse_transform(model.predict(nowsensors)[0])[0]
-            sp[1] = params.mlp.inverse_transform(model.predict(nowsensors)[0])[1]
-        except:
-            sp = [0,0]
-        print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
-        prob = model.predict_proba(nowsensors)[0].tolist()
-        print(' (probability = ' + str(round(100*max(prob),4)) + '%)\033[0m\n')
-    else:
+    if params.useRegressor:
         sp = model.predict(nowsensors)[0]
         print('\033[1m' + '\n Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         for k in range(2):
@@ -474,6 +464,25 @@ def predictDrive(model):
             else:
                 sp[k] = 0
         print('\033[1m' + ' Predicted regression value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
+    else:
+        nowsensors = params.scaler.transform(nowsensors)
+        try:
+            predictions = model.predict(nowsensors)
+            if params.ML_framework == "SKLearn":
+                sp = params.mlp.inverse_transform(predictions[0])
+                prob = model.predict_proba(nowsensors)[0].tolist()
+                predProb = round(100*max(prob),2)
+            if params.ML_framework == "TF":
+                pred_class = np.argmax(predictions)
+                sp = params.mlp.inverse_transform(pred_class)[0]
+                predProb = round(100*predictions[0][pred_class],2)
+            
+        except:
+            sp = [0,0]
+            prob = 0
+            
+        print('\033[1m' + '\n Predicted classification value (Neural Networks) = ( S=',str(sp[0]),', P=',str(sp[1]),')')
+        print(' (probability = ' + str(predProb) + '%)\033[0m\n')
         
     if params.saveNewTrainingData is True:
         with open(params.filename, "a") as sum_file:
