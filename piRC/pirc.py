@@ -4,7 +4,7 @@
 **********************************************************
 *
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20190925b
+* version: 20190925c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -38,6 +38,7 @@ class Conf():
         self.configFile = os.getcwd()+"/"+confFileName
         self.conf = configparser.ConfigParser()
         self.conf.optionxform = str
+        self.tf_directory = "TF_MLP"
         if os.path.isfile(self.configFile) is False:
             print(" Configuration file: \""+confFileName+"\" does not exist: Creating one.\n")
             self.createConfig()
@@ -156,6 +157,9 @@ class MultiClassReductor():
         
     def classes_(self):
         return self.totalClass
+        
+    def num_classes_(self):
+        return len(self.totalClass)
 
 
 #**********************************************
@@ -297,15 +301,7 @@ def runNN_SK(sensors, Cl, Root):
         nnTrainedData = Root + '.nnModelC.pkl'
     else:
         nnTrainedData = Root + '.nnModelR.pkl'
-    print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + params.nnSolver + ')...')
-    
-    sensors = params.scaler.fit_transform(sensors)
-
-    if params.useRegressor is False:
-        Y = params.mlp.transform(Cl)
-        #print(params.mlp.classes_())
-    else:
-        Y = Cl
+    print(' Running Neural Network: multi-layer perceptron (MLP) - (solver: ' + params.nnSolver + ')...\n')
 
     try:
         if params.nnAlwaysRetrain == False:
@@ -319,6 +315,14 @@ def runNN_SK(sensors, Cl, Root):
         ''' Retrain data if not available'''
         #**********************************************
         print(' Retraining NN model...\n')
+        
+        sensors = params.scaler.fit_transform(sensors)
+        if params.useRegressor is False:
+            Y = params.mlp.transform(Cl)
+            #print(params.mlp.classes_())
+        else:
+            Y = Cl
+        
         if params.useRegressor is False:
             clf = MLPClassifier(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=1)
         else:
@@ -337,16 +341,7 @@ def runNN_TF(sensors, Cl, Root):
         nnTrainedData = Root + '.nnModelC.h5'
     else:
         nnTrainedData = Root + '.nnModelR.h5'
-    print(' Running Neural Network: multi-layer perceptron (MLP) - Using TensorFlow...')
-    
-    sensors = params.scaler.fit_transform(sensors)
-
-    if params.useRegressor is False:
-        Y = params.mlp.transform(Cl)
-        #print(params.mlp.classes_())
-    else:
-        Y = Cl
-    print(Y)
+    print(' Running Neural Network: multi-layer perceptron (MLP) - Using TensorFlow...\n')
 
     try:
         import tensorflow as tf
@@ -355,6 +350,7 @@ def runNN_TF(sensors, Cl, Root):
         if params.nnAlwaysRetrain == False:
             print(' Opening NN training model...\n')
             model = keras.models.load_model(nnTrainedData)
+            print("\nDone. Training model loaded\n")
         else:
             raise ValueError('Force NN retraining.')
     except:
@@ -364,6 +360,15 @@ def runNN_TF(sensors, Cl, Root):
         print(' Retraining NN model...\n')
         #tf.compat.v1.Session(config=conf)
         
+        sensors = params.scaler.fit_transform(sensors)
+        print(params.mlp.num_classes_())
+        
+        if params.useRegressor is False:
+            Y = params.mlp.transform(Cl)
+            Y = keras.utils.to_categorical(Y, num_classes=params.mlp.num_classes_())
+        else:
+            Y = Cl
+            
         if params.fullSizeBatch == True:
             params.batch_size = sensors.shape[0]
                     
@@ -388,29 +393,25 @@ def runNN_TF(sensors, Cl, Root):
             optimizer=optim,
             metrics=['mae'])
         else:
-            model.add(keras.layers.Dense(np.unique(Y).size+1, activation = 'softmax'))
+            model.add(keras.layers.Dense(params.mlp.num_classes_(), activation = 'softmax'))
             model.compile(loss='categorical_crossentropy',
                 optimizer=optim,
                 metrics=['accuracy'])
     
-        tbLog = keras.callbacks.TensorBoard(log_dir=".", histogram_freq=120,
+        tbLog = keras.callbacks.TensorBoard(log_dir=params.tf_directory, histogram_freq=120,
                 batch_size=params.batch_size,
                 write_graph=True, write_grads=True, write_images=True)
         tbLogs = [tbLog]
-        
-        print(1)
-        
+                
         log = model.fit(sensors, Y,
             epochs=params.epochs,
             batch_size=params.batch_size,
             callbacks = tbLogs,
             verbose=2)
-        
-        print(4)
-        
+                
         model.save(nnTrainedData)
         
-        print("Done")
+        print("\nDone. Training model saved in: ",nnTrainedData,"\n")
 
     return model
 
