@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20190925d
+* version: 20191003a
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''

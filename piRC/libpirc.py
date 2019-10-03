@@ -4,7 +4,7 @@
 **********************************************************
 *
 * libpirc
-* version: 20190925d
+* version: 20191003a
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -25,11 +25,8 @@ import numpy as np
 ''' GPIO definitions '''
 #************************************
 
-#TRIG = [31,35,38,29]
-#ECHO = [33,37,40,32]
-
-TRIG = [31,35,29,38]
-ECHO = [33,37,32,40]
+TRIG = [35,31,29,38]
+ECHO = [37,33,32,40]
 
 AIN1 = 11
 AIN2 = 13

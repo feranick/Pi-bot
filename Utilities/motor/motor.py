@@ -42,6 +42,15 @@ def main():
     sleep(1)
     runMotor(0,0)
     runMotor(1,0)
+    sleep(1)
+    
+    runMotor(0,1)
+    sleep(1)
+    runMotor(0,0)
+    sleep(1)
+    runMotor(0,-1)
+    sleep(1)
+    runMotor(0,0)
 
 #************************************
 ''' Control Motors'''
