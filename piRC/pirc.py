@@ -11,6 +11,7 @@ print(__doc__)
 
 import numpy as np
 import sys, os.path, os, getopt, glob, csv, joblib, configparser
+import h5py, pickle
 from time import sleep, time
 from os.path import exists, splitext
 from os import rename
@@ -56,6 +57,7 @@ class Conf():
             self.runNN_TF = True
     
         self.scaler = StandardScaler()
+        self.scalFileExt = '_scaler.pkl'
         self.mlp = MultiClassReductor()
             
     def pircDef(self):
@@ -221,6 +223,7 @@ def runAuto(trainFile, type):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     model = selectMLFramework(sensors, Cl, trainFileRoot)
+    scal = pickle.loads(open(trainFileRoot+params.scalFileExt, "rb").read())
     fullStop(False)
     syncTime = time()
     while True:
@@ -233,7 +236,7 @@ def runAuto(trainFile, type):
         
         if type == False:
             print(" Running \033[1mPartial Auto\033[0m Mode\n")
-            s, p = predictDrive(model)
+            s, p = predictDrive(model, scal)
             drive(s,p)
             sleep(params.timeDelay)
         else:
@@ -241,7 +244,7 @@ def runAuto(trainFile, type):
             dt=0
             t1=time()
             while dt < 0.5:
-                s, p = predictDrive(model)
+                s, p = predictDrive(model, scal)
                 if p != 0:
                     dt = 0
                     drive(s,p)
@@ -326,7 +329,14 @@ def runNN_SK(sensors, Cl, Root):
         #**********************************************
         print(' Retraining NN model...\n')
         
-        sensors = params.scaler.fit_transform(sensors)
+        params.scaler.fit(sensors)
+        sensors = params.scaler.transform(sensors)
+        
+        with open(Root+params.scalFileExt, 'ab') as g:
+            g.write(pickle.dumps(params.scaler))
+        print("\n Scaling model saved in: ",nnTrainedData,"\n")
+            
+        
         if params.useRegressor is False:
             Y = params.mlp.transform(Cl)
             #print(params.mlp.classes_())
@@ -359,7 +369,6 @@ def runNN_TF(sensors, Cl, Root):
 
     try:
         import tensorflow as tf
-        import h5py, pickle
         import tensorflow.keras as keras  #tf.keras
         if params.nnAlwaysRetrain == False:
             print(' Opening NN training model...\n')
@@ -374,7 +383,10 @@ def runNN_TF(sensors, Cl, Root):
         print(' Retraining NN model...\n')
         #tf.compat.v1.Session(config=conf)
         
-        sensors = params.scaler.fit_transform(sensors)
+        params.scaler.fit(sensors)
+        sensors = params.scaler.transform(sensors)
+        with open(Root+params.scalFileExt, 'ab') as g:
+            g.write(pickle.dumps(params.scaler))
         
         if params.useRegressor is False:
             Y = params.mlp.transform(Cl)
@@ -431,7 +443,7 @@ def runNN_TF(sensors, Cl, Root):
 #*************************************************
 ''' Predict drive pattern '''
 #*************************************************
-def predictDrive(model):
+def predictDrive(model, scal):
     params = Conf()
     np.set_printoptions(suppress=True)
     sp = [0,0]
@@ -461,7 +473,7 @@ def predictDrive(model):
                 sp[k] = 0
         print('\033[1m' + ' Predicted regression value = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
     else:
-        nowsensors = params.scaler.transform(nowsensors)
+        nowsensors = scal.transform(nowsensors)
         try:
             predictions = model.predict(nowsensors)
             if params.ML_framework == "SKLearn":
