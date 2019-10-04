@@ -494,7 +494,8 @@ def predictDrive(model, scal):
         
     if params.saveNewTrainingData is True:
         with open(params.filename, "a") as sum_file:
-            sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z,v))
+            #sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z,v))
+            np.savetxt(sum_file, [data], fmt="%.2f", delimiter=' ', newline='\n')
 
     return sp[0], sp[1]
     
