@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191004a
+* version: 20191004b
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -63,12 +63,12 @@ class Conf():
     def pircDef(self):
         self.conf['Parameters'] = {
             'timeDelay' : .25,
-            'runFullAuto' : False,
-            'useCamera' : False,
-            'nnAlwaysRetrain': False,
+            'runFullAuto' : True,
+            'useCamera' : True,
+            'nnAlwaysRetrain': True,
             'syncTimeLimit': 20, # time in seconds for NN model synchronization
             'syncTrainModel': False,
-            'saveNewTrainingData': False,
+            'saveNewTrainingData': True,
             'ML_framework': 'SKLearn',     # Use either: SKLearn (for scikit-learn) or TF (for TensorFlow)
             'useRegressor': False,
             'HL': [10,],
@@ -482,19 +482,18 @@ def predictDrive(model, scal):
                 predProb = round(100*max(prob),2)
             if params.ML_framework == "TF":
                 pred_class = np.argmax(predictions)
-                sp = params.mlp.inverse_transform(pred_class)[0]
+                sp = params.mlp.inverse_transform(pred_class)
                 predProb = round(100*predictions[0][pred_class],2)
             
         except:
             sp = [0,0]
-            prob = 0
-            
+            predProb = 0
+                    
         print('\033[1m' + '\n Predicted classification value = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         print(' (probability = ' + str(predProb) + '%)\033[0m\n')
         
     if params.saveNewTrainingData is True:
         with open(params.filename, "a") as sum_file:
-            #sum_file.write('{0:.0f}\t{1:.0f}\t{2:.0f}\t{3:.0f}\t{4:.0f}\t{5:.0f}\t{6:.3f}\t{7:.3f}\t{8:.3f}\t{9:.3f}\n'.format(sp[0],sp[1],l,r,c,b,x,y,z,v))
             np.savetxt(sum_file, [data], fmt="%.2f", delimiter=' ', newline='\n')
 
     return sp[0], sp[1]
