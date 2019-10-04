@@ -71,7 +71,7 @@ class Conf():
             'saveNewTrainingData': True,
             'ML_framework': 'SKLearn',     # Use either: SKLearn (for scikit-learn) or TF (for TensorFlow)
             'useRegressor': False,
-            'HL': [10,],
+            'HL': [270,170,70,10],
             }
             
         self.conf['SKLearn'] = {
