@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191003a
+* version: 20191004a
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -187,10 +187,10 @@ def main():
                 exitProg()
 
         if o in ("-t" , "--train"):
-            #try:
-            runTrain(sys.argv[2])
-            #except:
-            #    exitProg()
+            try:
+                runTrain(sys.argv[2])
+            except:
+                exitProg()
 
         if o in ("-c" , "--collect"):
             try:
@@ -202,7 +202,8 @@ def main():
 ''' seletMLFramework '''
 ''' Select and initialize appropriate framework '''
 #*************************************************
-def selectMLLoadTrain(self, sensors, Cl, trainFileRoot):
+def selectMLFramework(sensors, Cl, trainFileRoot):
+    params = Conf()
     if params.runNN_SK:
         print(" Using SKLearn")
         model = runNN_SK(sensors, Cl, trainFileRoot)
