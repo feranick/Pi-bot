@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191004b
+* version: 20191007a
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -72,6 +72,8 @@ class Conf():
             'ML_framework': 'SKLearn',     # Use either: SKLearn (for scikit-learn) or TF (for TensorFlow)
             'useRegressor': False,
             'HL': [270,170,70,10],
+            'l2' : 1e-5,
+            'epochs' : 200,
             }
             
         self.conf['SKLearn'] = {
@@ -82,8 +84,6 @@ class Conf():
             'l_rate' : 0.001,
             'l_rdecay' : 1e-4,
             'drop' : 0,
-            'l2' : 1e-4,
-            'epochs' : 1000,
             'cv_split' : 0.01,
             'fullSizeBatch' : True,
             'batch_size' : 64,
@@ -115,14 +115,14 @@ class Conf():
             self.ML_framework = self.conf.get('Parameters','ML_framework')
             self.useRegressor = self.conf.getboolean('Parameters','useRegressor')
             self.HL = eval(self.pircDef['HL'])
+            self.l2 = self.conf.getfloat('Parameters','l2')
+            self.epochs = self.conf.getint('Parameters','epochs')
             
             self.nnSolver = self.conf.get('SKLearn','nnSolver')
             
             self.l_rate = self.conf.getfloat('TF','l_rate')
             self.l_rdecay = self.conf.getfloat('TF','l_rdecay')
             self.drop = self.conf.getfloat('TF','drop')
-            self.l2 = self.conf.getfloat('TF','l2')
-            self.epochs = self.conf.getint('TF','epochs')
             self.cv_split = self.conf.getfloat('TF','cv_split')
             self.fullSizeBatch = self.conf.getboolean('TF','fullSizeBatch')
             self.batch_size = self.conf.getint('TF','batch_size')
@@ -206,11 +206,12 @@ def main():
 #*************************************************
 def selectMLFramework(sensors, Cl, trainFileRoot):
     params = Conf()
+    printParams()
     if params.runNN_SK:
-        print(" Using SKLearn")
+        #print(" Using SKLearn")
         model = runNN_SK(sensors, Cl, trainFileRoot)
     if params.runNN_TF:
-        print(" Using TensorFlow")
+        #print(" Using TensorFlow")
         model = runNN_TF(sensors, Cl, trainFileRoot)
     return model
 
@@ -264,11 +265,12 @@ def runTrain(trainFile):
     trainFileRoot = os.path.splitext(trainFile)[0]
     Cl, sensors = readTrainFile(trainFile)
     params.nnAlwaysRetrain = True
+    printParams()
     if params.runNN_SK:
-        print(" Using SKlearn")
+        #print(" Using SKlearn")
         runNN_SK(sensors, Cl, trainFileRoot)
     if params.runNN_TF:
-        print(" Using TensorFlow")
+        #print(" Using TensorFlow")
         runNN_TF(sensors, Cl, trainFileRoot)
 
 #*************************************************
@@ -309,32 +311,32 @@ def runNN_SK(sensors, Cl, Root):
     params = Conf()
     if params.useRegressor:
         nnTrainedData = Root + '.nnModelR.pkl'
-        print(' Running multi-layer perceptron (SKLearn) - Regression')
+        print("\n Running multi-layer perceptron (SKLearn) - Regression")
     else:
         nnTrainedData = Root + '.nnModelC.pkl'
-        print(' Running multi-layer perceptron (SKLearn) - Classification')
-    print(' Training file: ' + nnTrainedData + '\n')
+        print("\n Running multi-layer perceptron (SKLearn) - Classification")
+    print("\n Training file:", nnTrainedData)
 
     try:
         if params.nnAlwaysRetrain == False:
             with open(nnTrainedData):
                 print(' Opening NN training model...\n')
                 model = joblib.load(nnTrainedData)
-            print("\n Done. Training model loaded\n")
+            print("\n Done. Training model loaded")
         else:
-            raise ValueError('Force NN retraining.')
+            raise ValueError("\n Force NN retraining.")
     except:
         #**********************************************
         ''' Retrain data if not available'''
         #**********************************************
-        print(' Retraining NN model...\n')
+        print("\n Retraining NN model...")
         
         params.scaler.fit(sensors)
         sensors = params.scaler.transform(sensors)
         
         with open(Root+params.scalFileExt, 'ab') as g:
             g.write(pickle.dumps(params.scaler))
-        print("\n Scaling model saved in: ",nnTrainedData,"\n")
+        print("\n Scaling model saved in: ",nnTrainedData)
             
         
         if params.useRegressor is False:
@@ -344,9 +346,11 @@ def runNN_SK(sensors, Cl, Root):
             Y = Cl
         
         if params.useRegressor is False:
-            model = MLPClassifier(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=1)
+            model = MLPClassifier(solver=params.nnSolver, hidden_layer_sizes=params.HL, random_state=1,
+                alpha = params.l2, max_iter = params.epochs)
         else:
-            model = MLPRegressor(solver=params.nnSolver, alpha=1e-5, hidden_layer_sizes=params.HL, random_state=9)
+            model = MLPRegressor(solver=params.nnSolver, hidden_layer_sizes=params.HL, random_state=9,
+                alpha = params.l2, max_iter = params.epochs)
         model.fit(sensors, Y)
         joblib.dump(model, nnTrainedData)
     
@@ -361,26 +365,26 @@ def runNN_TF(sensors, Cl, Root):
     params = Conf()
     if params.useRegressor:
         nnTrainedData = Root + '.nnModelR.h5'
-        print(' Running multi-layer perceptron (TensorFlow) - Regression')
+        print("\n Running multi-layer perceptron (TensorFlow) - Regression")
     else:
         nnTrainedData = Root + '.nnModelC.h5'
-        print(' Running multi-layer perceptron (TensorFlow) - Classification')
-    print(' Training file: ' + nnTrainedData + '\n')
+        print("\n Running multi-layer perceptron (TensorFlow) - Classification")
+    print("\n Training file:", nnTrainedData)
 
     try:
         import tensorflow as tf
         import tensorflow.keras as keras  #tf.keras
         if params.nnAlwaysRetrain == False:
-            print(' Opening NN training model...\n')
+            print("\n Opening NN training model...")
             model = keras.models.load_model(nnTrainedData)
             print("\n Done. Training model loaded\n")
         else:
-            raise ValueError('Force NN retraining.')
+            raise ValueError("\n Force NN retraining.")
     except:
         #**********************************************
         ''' Retrain data if not available'''
         #**********************************************
-        print(' Retraining NN model...\n')
+        print("\n Retraining NN model...")
         #tf.compat.v1.Session(config=conf)
         
         params.scaler.fit(sensors)
@@ -498,6 +502,25 @@ def predictDrive(model, scal):
 
     return sp[0], sp[1]
     
+#************************************
+# Print NN Info
+#************************************
+def printParams():
+    params = Conf()
+    print('\n  ================================================')
+    print('  \033[1mNeural Network\033[0m - Parameters')
+    print('  ================================================')
+    print('  ML Framework:',params.ML_framework,
+            '\n  Optimizer:',params.nnSolver,
+            '\n  Activation function:','relu',
+            '\n  Hidden layers:', params.HL,
+            '\n  Epochs:',params.epochs,
+            '\n  L2:',params.l2,
+            '\n  Dropout (TF):', params.drop,
+            '\n  Learning rate (TF):', params.l_rate,
+            '\n  Learning decay rate (TF):', params.l_rdecay)
+    print('  ================================================\n')
+
 
 #*************************************************
 ''' Drive '''
