@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191007a
+* version: 20191022a
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -90,6 +90,7 @@ class Conf():
             }
             
         self.conf['System'] = {
+            'makeQuantizedTFlite' : False,
             'debug': False, # do not activate sensors or motors in debug mode
             #'useTFKeras' : False,
             #'setMaxMem' : False,   # TensorFlow 2.0
@@ -127,6 +128,7 @@ class Conf():
             self.fullSizeBatch = self.conf.getboolean('TF','fullSizeBatch')
             self.batch_size = self.conf.getint('TF','batch_size')
             
+            self.makeQuantizedTFlite = self.conf.getboolean('System','makeQuantizedTFlite')
             self.debug = self.conf.getboolean('System','debug')
             
         except:
@@ -440,6 +442,9 @@ def runNN_TF(sensors, Cl, Root):
                 
         model.save(nnTrainedData)
         
+        if params.makeQuantizedTFlite:
+            makeQuantizedTFmodel(sensors, model, nnTrainedData)
+        
         print("\n Done. Training model saved in: ",nnTrainedData,"\n")
 
     return model
@@ -533,6 +538,30 @@ def drive(s,p):
 def fullStop(type):
     if Conf().debug is False:
         libpirc.fullStop(type)
+        
+#************************************
+### Create Quantized tflite model
+#************************************
+def makeQuantizedTFmodel(A, model, model_name):
+    params = Conf()
+    print("\n  Creating quantized TensorFlowLite Model...\n")
+    def representative_dataset_gen():
+        for i in range(A.shape[0]):
+            yield [A[i:i+1].astype(np.float32)]
+    try:
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)    # TensorFlow 2.x
+    except:
+        converter = tf.lite.TFLiteConverter.from_keras_model_file(model_name)  # TensorFlow 1.x
+
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    converter.inference_input_type = tf.uint8
+    converter.inference_output_type = tf.uint8
+    converter.representative_dataset = representative_dataset_gen
+    tflite_quant_model = converter.convert()
+
+    with open(os.path.splitext(model_name)[0]+'.tflite', 'wb') as o:
+        o.write(tflite_quant_model)
 
 #*************************************************
 ''' Lists the program usage '''
