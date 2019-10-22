@@ -188,10 +188,10 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            #try:
-            runAuto(sys.argv[2],params.runFullAuto)
-            #except:
-            #    exitProg()
+            try:
+                runAuto(sys.argv[2],params.runFullAuto)
+            except:
+                exitProg()
 
         if o in ("-t" , "--train"):
             try:
@@ -216,11 +216,15 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
         #print(" Using SKLearn")
         model = runNN_SK(sensors, Cl, trainFileRoot)
     if params.runNN_TF:
-        import tensorflow as tf
-        import tensorflow.keras as keras  #tf.keras
-        #print(" Using TensorFlow")
-        model = keras.models.load_model(fileTrainingData(trainFileRoot, True))
-        #model = runNN_TF(sensors, Cl, trainFileRoot)
+        if not params.TFliteRuntime:
+            import tensorflow as tf
+            if params.useTFlitePred:
+                model = tf.lite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+'.tflite')
+            else:
+                model = tensorflow.keras.models.load_model(fileTrainingData(trainFileRoot, True))
+        else:
+            import tflite_runtime.interpreter as tflite
+            model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+'.tflite')
     return model
 
 #*************************************************
@@ -472,7 +476,7 @@ def predictDrive(model, scal, root):
             sp = model.predict(nowsensors)[0]
         if params.ML_framework == "TF":
             if params.useTFlitePred:
-                sp = getPredictions(nowsensors, root)
+                sp = getPredictions(nowsensors, model)
             else:
                 sp = model.predict(R).flatten()[0]
         
@@ -495,7 +499,7 @@ def predictDrive(model, scal, root):
                 predProb = round(100*max(prob),2)
             if params.ML_framework == "TF":
                 if params.useTFlitePred:
-                    predictions = getPredictions(nowsensors, root)
+                    predictions = getPredictions(nowsensors, model)
                 else:
                     predictions = model.predict(R, verbose=0)
                     
@@ -597,17 +601,8 @@ def makeQuantizedTFmodel(A, model, model_name):
 #************************************
 # Make prediction based on framework
 #************************************
-def getPredictions(R, root):
+def getPredictions(R, interpreter):
     params = Conf()
-        
-    # Load TFLite model and allocate tensors.
-    if params.TFliteRuntime:
-        print("RUNNING RUNTIME")
-        import tflite_runtime.interpreter as tflite
-        interpreter = tflite.Interpreter(model_path=os.path.splitext(root)[0]+'.tflite')
-    else:
-        import tensorflow as tf
-        interpreter = tf.lite.Interpreter(model_path=os.path.splitext(root)[0]+'.tflite')
     interpreter.allocate_tensors()
     # Get input and output tensors.
     input_details = interpreter.get_input_details()
