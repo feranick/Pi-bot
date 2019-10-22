@@ -219,12 +219,16 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
         if not params.TFliteRuntime:
             import tensorflow as tf
             if params.useTFlitePred:
+                # model here is intended as interpreter
                 model = tf.lite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+'.tflite')
+                model.allocate_tensors()
             else:
                 model = tensorflow.keras.models.load_model(fileTrainingData(trainFileRoot, True))
         else:
             import tflite_runtime.interpreter as tflite
+            # model here is intended as interpreter
             model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+'.tflite')
+            model.allocate_tensors()
     return model
 
 #*************************************************
@@ -603,7 +607,7 @@ def makeQuantizedTFmodel(A, model, model_name):
 #************************************
 def getPredictions(R, interpreter):
     params = Conf()
-    interpreter.allocate_tensors()
+    #interpreter.allocate_tensors()
     # Get input and output tensors.
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
