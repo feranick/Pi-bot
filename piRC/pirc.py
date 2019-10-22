@@ -188,10 +188,10 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            #try:
-            runAuto(sys.argv[2],params.runFullAuto)
-            #except:
-            #    exitProg()
+            try:
+                runAuto(sys.argv[2],params.runFullAuto)
+            except:
+                exitProg()
 
         if o in ("-t" , "--train"):
             try:
@@ -219,7 +219,7 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
         import tensorflow as tf
         import tensorflow.keras as keras  #tf.keras
         #print(" Using TensorFlow")
-        model = keras.models.load_model(fileTrainingData(trainFileRoot))
+        model = keras.models.load_model(fileTrainingData(trainFileRoot, True))
         #model = runNN_TF(sensors, Cl, trainFileRoot)
     return model
 
@@ -245,7 +245,7 @@ def runAuto(trainFile, type):
         
         if type == False:
             print(" Running \033[1mPartial Auto\033[0m Mode\n")
-            s, p = predictDrive(model, scal, fileTrainingData(trainFileRoot))
+            s, p = predictDrive(model, scal, fileTrainingData(trainFileRoot, False))
             drive(s,p)
             sleep(params.timeDelay)
         else:
@@ -253,7 +253,7 @@ def runAuto(trainFile, type):
             dt=0
             t1=time()
             while dt < 0.5:
-                s, p = predictDrive(model, scal, fileTrainingData(trainFileRoot))
+                s, p = predictDrive(model, scal, fileTrainingData(trainFileRoot, False))
                 if p != 0:
                     dt = 0
                     drive(s,p)
@@ -317,7 +317,7 @@ def readTrainFile(trainFile):
 #********************************************************************************
 def runNN_SK(sensors, Cl, Root):
     params = Conf()
-    nnTrainedData = fileTrainingData(Root)
+    nnTrainedData = fileTrainingData(Root, True)
     print("\n Training file:", nnTrainedData)
 
     try:
@@ -366,7 +366,7 @@ def runNN_SK(sensors, Cl, Root):
 #********************************************************************************
 def runNN_TF(sensors, Cl, Root):
     params = Conf()
-    nnTrainedData = fileTrainingData(Root)
+    nnTrainedData = fileTrainingData(Root, True)
     print("\n Training file:", nnTrainedData)
 
     try:
@@ -476,7 +476,7 @@ def predictDrive(model, scal, root):
             else:
                 sp = model.predict(R).flatten()[0]
         
-        print('\033[1m' + '\n Predicted regression value = ( S=',str(sp[0]),', P=',str(sp[1]),')')
+        print('\033[1m' + ' Predicted regression = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         for k in range(2):
             if sp[k] >= 1:
                 sp[k] = 1
@@ -484,7 +484,7 @@ def predictDrive(model, scal, root):
                 sp[k] = -1
             else:
                 sp[k] = 0
-        print('\033[1m' + ' Predicted regression value = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
+        print('\033[1m' + ' Predicted regression = ( S=',str(sp[0]),', P=',str(sp[1]),') Normalized\n')
     else:
         nowsensors = scal.transform(nowsensors)
         try:
@@ -507,8 +507,8 @@ def predictDrive(model, scal, root):
             sp = [0,0]
             predProb = 0
                     
-        print('\033[1m' + '\n Predicted classification value = ( S=',str(sp[0]),', P=',str(sp[1]),')')
-        print(' (probability = ' + str(predProb) + '%)\033[0m\n')
+        print('\033[1m' + ' Predicted classification = ( S=',str(sp[0]),', P=',str(sp[1]),') (prob = ' + str(predProb) + '%)\033[0m\n')
+        #print(' (prob = ' + str(predProb) + '%)\033[0m\n')
         
     if params.saveNewTrainingData is True:
         with open(params.filename, "a") as sum_file:
@@ -614,22 +614,26 @@ def getPredictions(R, root):
 #*************************************************
 # Define File Training Data
 #*************************************************
-def fileTrainingData(Root):
+def fileTrainingData(Root, verbose):
     params = Conf()
     if params.ML_framework == "SKLearn":
         if params.useRegressor:
             nnTrainedData = Root + '.nnModelR.pkl'
-            print("\n Running multi-layer perceptron (SKLearn) - Regression")
+            if verbose:
+                print("\n Running multi-layer perceptron (SKLearn) - Regression")
         else:
             nnTrainedData = Root + '.nnModelC.pkl'
-            print("\n Running multi-layer perceptron (SKLearn) - Classification")
+            if verbose:
+                print("\n Running multi-layer perceptron (SKLearn) - Classification")
     if params.ML_framework == "TF":
         if params.useRegressor:
             nnTrainedData = Root + '.nnModelR.h5'
-            print("\n Running multi-layer perceptron (TensorFlow) - Regression")
+            if verbose:
+                print("\n Running multi-layer perceptron (TensorFlow) - Regression")
         else:
             nnTrainedData = Root + '.nnModelC.h5'
-            print("\n Running multi-layer perceptron (TensorFlow) - Classification")
+            if verbose:
+                print("\n Running multi-layer perceptron (TensorFlow) - Classification")
     else:
         nnTrainedData = Root
     return nnTrainedData
