@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191022a
+* version: 20191022c
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -91,8 +91,9 @@ class Conf():
             
         self.conf['System'] = {
             'makeQuantizedTFlite' : False,
+            'useTFlitePred' : False,
+            'TFliteRuntime' : False,
             'debug': False, # do not activate sensors or motors in debug mode
-            #'useTFKeras' : False,
             #'setMaxMem' : False,   # TensorFlow 2.0
             #'maxMem' : 4096,       # TensorFlow 2.0
             }
@@ -129,6 +130,8 @@ class Conf():
             self.batch_size = self.conf.getint('TF','batch_size')
             
             self.makeQuantizedTFlite = self.conf.getboolean('System','makeQuantizedTFlite')
+            self.useTFlitePred = self.conf.getboolean('System','useTFlitePred')
+            self.TFliteRuntime = self.conf.getboolean('System','TFliteRuntime')
             self.debug = self.conf.getboolean('System','debug')
             
         except:
@@ -185,10 +188,10 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            try:
-                runAuto(sys.argv[2],params.runFullAuto)
-            except:
-                exitProg()
+            #try:
+            runAuto(sys.argv[2],params.runFullAuto)
+            #except:
+            #    exitProg()
 
         if o in ("-t" , "--train"):
             try:
@@ -213,8 +216,11 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
         #print(" Using SKLearn")
         model = runNN_SK(sensors, Cl, trainFileRoot)
     if params.runNN_TF:
+        import tensorflow as tf
+        import tensorflow.keras as keras  #tf.keras
         #print(" Using TensorFlow")
-        model = runNN_TF(sensors, Cl, trainFileRoot)
+        model = keras.models.load_model(fileTrainingData(trainFileRoot))
+        #model = runNN_TF(sensors, Cl, trainFileRoot)
     return model
 
 #*************************************************
@@ -232,14 +238,14 @@ def runAuto(trainFile, type):
     while True:
         if time() - syncTime > params.syncTimeLimit and params.syncTrainModel == True:
             print(" Reloading NN model...")
-            model = selectMLFramework(sensors, Cl, trainFileRoot)
+            #model = selectMLFramework(sensors, Cl, trainFileRoot)
             print(" Synchronizing NN model...\n")
             os.system("./syncTFile.sh " + trainFileRoot + " &")
             syncTime = time()
         
         if type == False:
             print(" Running \033[1mPartial Auto\033[0m Mode\n")
-            s, p = predictDrive(model, scal)
+            s, p = predictDrive(model, scal, fileTrainingData(trainFileRoot))
             drive(s,p)
             sleep(params.timeDelay)
         else:
@@ -247,7 +253,7 @@ def runAuto(trainFile, type):
             dt=0
             t1=time()
             while dt < 0.5:
-                s, p = predictDrive(model, scal)
+                s, p = predictDrive(model, scal, fileTrainingData(trainFileRoot))
                 if p != 0:
                     dt = 0
                     drive(s,p)
@@ -311,12 +317,7 @@ def readTrainFile(trainFile):
 #********************************************************************************
 def runNN_SK(sensors, Cl, Root):
     params = Conf()
-    if params.useRegressor:
-        nnTrainedData = Root + '.nnModelR.pkl'
-        print("\n Running multi-layer perceptron (SKLearn) - Regression")
-    else:
-        nnTrainedData = Root + '.nnModelC.pkl'
-        print("\n Running multi-layer perceptron (SKLearn) - Classification")
+    nnTrainedData = fileTrainingData(Root)
     print("\n Training file:", nnTrainedData)
 
     try:
@@ -365,17 +366,13 @@ def runNN_SK(sensors, Cl, Root):
 #********************************************************************************
 def runNN_TF(sensors, Cl, Root):
     params = Conf()
-    if params.useRegressor:
-        nnTrainedData = Root + '.nnModelR.h5'
-        print("\n Running multi-layer perceptron (TensorFlow) - Regression")
-    else:
-        nnTrainedData = Root + '.nnModelC.h5'
-        print("\n Running multi-layer perceptron (TensorFlow) - Classification")
+    nnTrainedData = fileTrainingData(Root)
     print("\n Training file:", nnTrainedData)
 
     try:
         import tensorflow as tf
         import tensorflow.keras as keras  #tf.keras
+        
         if params.nnAlwaysRetrain == False:
             print("\n Opening NN training model...")
             model = keras.models.load_model(nnTrainedData)
@@ -429,7 +426,7 @@ def runNN_TF(sensors, Cl, Root):
                 optimizer=optim,
                 metrics=['accuracy'])
     
-        tbLog = keras.callbacks.TensorBoard(log_dir=params.tf_directory, histogram_freq=120,
+        tbLog = keras.callbacks.TensorBoard(log_dir=params.tf_directory,
                 batch_size=params.batch_size,
                 write_graph=True, write_grads=True, write_images=True)
         tbLogs = [tbLog]
@@ -452,7 +449,7 @@ def runNN_TF(sensors, Cl, Root):
 #*************************************************
 ''' Predict drive pattern '''
 #*************************************************
-def predictDrive(model, scal):
+def predictDrive(model, scal, root):
     params = Conf()
     np.set_printoptions(suppress=True)
     sp = [0,0]
@@ -471,7 +468,14 @@ def predictDrive(model, scal):
         nowsensors = np.append(nowsensors, data[10:]).reshape(1,-1)
 
     if params.useRegressor:
-        sp = model.predict(nowsensors)[0]
+        if params.ML_framework == "SKLearn":
+            sp = model.predict(nowsensors)[0]
+        if params.ML_framework == "TF":
+            if params.useTFlitePred:
+                sp = getPredictions(nowsensors, root)
+            else:
+                sp = model.predict(R).flatten()[0]
+        
         print('\033[1m' + '\n Predicted regression value = ( S=',str(sp[0]),', P=',str(sp[1]),')')
         for k in range(2):
             if sp[k] >= 1:
@@ -484,12 +488,19 @@ def predictDrive(model, scal):
     else:
         nowsensors = scal.transform(nowsensors)
         try:
-            predictions = model.predict(nowsensors)
             if params.ML_framework == "SKLearn":
+                predictions = model.predict(nowsensors)
                 sp = params.mlp.inverse_transform(predictions[0])
                 prob = model.predict_proba(nowsensors)[0].tolist()
                 predProb = round(100*max(prob),2)
             if params.ML_framework == "TF":
+                if params.useTFlitePred:
+                    print("RUN TFLITE!")
+                    predictions = getPredictions(nowsensors, root)
+                else:
+                    print("NOT RUN TFLITE!")
+                    predictions = model.predict(R, verbose=0)
+                    
                 pred_class = np.argmax(predictions)
                 sp = params.mlp.inverse_transform(pred_class)
                 predProb = round(100*predictions[0][pred_class],2)
@@ -515,8 +526,11 @@ def printParams():
     print('\n  ================================================')
     print('  \033[1mNeural Network\033[0m - Parameters')
     print('  ================================================')
-    print('  ML Framework:',params.ML_framework,
-            '\n  Optimizer:',params.nnSolver,
+    print('  ML Framework:',params.ML_framework)
+    if params.ML_framework == 'TF' and not params.useTFlitePred:
+        import tensorflow as tf
+        print('  Framework Version:',tf.version.VERSION)
+    print('  Optimizer:',params.nnSolver,
             '\n  Activation function:','relu',
             '\n  Hidden layers:', params.HL,
             '\n  Epochs:',params.epochs,
@@ -544,6 +558,9 @@ def fullStop(type):
 #************************************
 def makeQuantizedTFmodel(A, model, model_name):
     params = Conf()
+    import tensorflow as tf
+    import tensorflow.keras as keras  #tf.keras
+        
     print("\n  Creating quantized TensorFlowLite Model...\n")
     def representative_dataset_gen():
         for i in range(A.shape[0]):
@@ -563,8 +580,62 @@ def makeQuantizedTFmodel(A, model, model_name):
     with open(os.path.splitext(model_name)[0]+'.tflite', 'wb') as o:
         o.write(tflite_quant_model)
 
+#************************************
+# Make prediction based on framework
+#************************************
+def getPredictions(R, root):
+    params = Conf()
+        
+    # Load TFLite model and allocate tensors.
+    if params.TFliteRuntime:
+        import tflite_runtime.interpreter as tflite
+        interpreter = tflite.Interpreter(model_path=os.path.splitext(root)[0]+'.tflite')
+    else:
+        import tensorflow as tf
+        interpreter = tf.lite.Interpreter(model_path=os.path.splitext(root)[0]+'.tflite')
+    interpreter.allocate_tensors()
+    # Get input and output tensors.
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
+    # Test model on random input data.
+    input_shape = input_details[0]['shape']
+    input_data = np.array(R, dtype=np.float32)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
+
+    interpreter.invoke()
+
+    # The function `get_tensor()` returns a copy of the tensor data.
+    # Use `tensor()` in order to get a pointer to the tensor.
+    predictions = interpreter.get_tensor(output_details[0]['index'])[0][0]
+        
+    return predictions
+
 #*************************************************
-''' Lists the program usage '''
+# Define File Training Data
+#*************************************************
+def fileTrainingData(Root):
+    params = Conf()
+    if params.ML_framework == "SKLearn":
+        if params.useRegressor:
+            nnTrainedData = Root + '.nnModelR.pkl'
+            print("\n Running multi-layer perceptron (SKLearn) - Regression")
+        else:
+            nnTrainedData = Root + '.nnModelC.pkl'
+            print("\n Running multi-layer perceptron (SKLearn) - Classification")
+    if params.ML_framework == "TF":
+        if params.useRegressor:
+            nnTrainedData = Root + '.nnModelR.h5'
+            print("\n Running multi-layer perceptron (TensorFlow) - Regression")
+        else:
+            nnTrainedData = Root + '.nnModelC.h5'
+            print("\n Running multi-layer perceptron (TensorFlow) - Classification")
+    else:
+        nnTrainedData = Root
+    return nnTrainedData
+
+#*************************************************
+# Lists the program usage
 #*************************************************
 def usage():
     print('\n Usage:')
