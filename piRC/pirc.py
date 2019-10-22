@@ -495,10 +495,8 @@ def predictDrive(model, scal, root):
                 predProb = round(100*max(prob),2)
             if params.ML_framework == "TF":
                 if params.useTFlitePred:
-                    print("RUN TFLITE!")
                     predictions = getPredictions(nowsensors, root)
                 else:
-                    print("NOT RUN TFLITE!")
                     predictions = model.predict(R, verbose=0)
                     
                 pred_class = np.argmax(predictions)
@@ -523,13 +521,15 @@ def predictDrive(model, scal, root):
 #************************************
 def printParams():
     params = Conf()
+    if params.ML_framework == 'TF' and not params.useTFlitePred:
+        print("  Importing TensorFlow...")
+        import tensorflow as tf
+        version = tf.version.VERSION
     print('\n  ================================================')
     print('  \033[1mNeural Network\033[0m - Parameters')
     print('  ================================================')
     print('  ML Framework:',params.ML_framework)
-    if params.ML_framework == 'TF' and not params.useTFlitePred:
-        import tensorflow as tf
-        print('  Framework Version:',tf.version.VERSION)
+    print('  Framework Version:',version)
     print('  Optimizer:',params.nnSolver,
             '\n  Activation function:','relu',
             '\n  Hidden layers:', params.HL,
