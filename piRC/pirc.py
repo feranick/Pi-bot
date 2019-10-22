@@ -188,10 +188,10 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            try:
-                runAuto(sys.argv[2],params.runFullAuto)
-            except:
-                exitProg()
+            #try:
+            runAuto(sys.argv[2],params.runFullAuto)
+            #except:
+            #    exitProg()
 
         if o in ("-t" , "--train"):
             try:
@@ -521,15 +521,29 @@ def predictDrive(model, scal, root):
 #************************************
 def printParams():
     params = Conf()
-    if params.ML_framework == 'TF' and not params.useTFlitePred:
-        print("  Importing TensorFlow...")
-        import tensorflow as tf
-        version = tf.version.VERSION
+    if params.ML_framework == 'TF':
+        if not params.TFliteRuntime:
+            if not params.useTFlitePred:
+                print("  Importing TensorFlow...")
+                framework = "TensorFlow"
+            if params.useTFlitePred:
+                print("  Importing TensorFlowLite...")
+                framework = "TensorFlowLite"
+            import tensorflow as tf
+            version = tf.version.VERSION
+        else:
+            print("  Importing TensorFlowLite Runtime...")
+            framework = "TensorFlowLite Runtime"
+            version = 0
+    else:
+        framework = params.ML_framework
+        version = 0
+        
     print('\n  ================================================')
     print('  \033[1mNeural Network\033[0m - Parameters')
     print('  ================================================')
-    print('  ML Framework:',params.ML_framework)
-    print('  Framework Version:',version)
+    print('  ML Framework:',framework)
+    print('  Framework version:', version)
     print('  Optimizer:',params.nnSolver,
             '\n  Activation function:','relu',
             '\n  Hidden layers:', params.HL,
@@ -588,6 +602,7 @@ def getPredictions(R, root):
         
     # Load TFLite model and allocate tensors.
     if params.TFliteRuntime:
+        print("RUNNING RUNTIME")
         import tflite_runtime.interpreter as tflite
         interpreter = tflite.Interpreter(model_path=os.path.splitext(root)[0]+'.tflite')
     else:

@@ -4,7 +4,7 @@
 **********************************************************
 *
 * libpirc
-* version: 20191007a
+* version: 20191022c
 *
 * By: Nicola Ferralis <feranick@hotmail.com>
 *
@@ -239,10 +239,10 @@ def fullStop(end):
     runMotor(0,0)
     runMotor(1,0)
     if end is True:
-        print('\nFULL STOP - Ending\n')
+        print('\n FULL STOP - Ending\n')
         GPIO.cleanup()
     else:
-        print('\nFULL STOP - Starting...\n')
+        print('\n FULL STOP - Starting...\n')
 
 #************************************
 ''' Obstacle Avoidance '''
