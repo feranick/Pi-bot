@@ -435,8 +435,7 @@ def runNN_TF(sensors, Cl, Root):
                 metrics=['accuracy'])
     
         tbLog = keras.callbacks.TensorBoard(log_dir=params.tf_directory,
-                batch_size=params.batch_size,
-                write_graph=True, write_grads=True, write_images=True)
+                write_graph=True, write_images=True)
         tbLogs = [tbLog]
                 
         log = model.fit(sensors, Y,
