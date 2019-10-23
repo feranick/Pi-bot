@@ -191,10 +191,10 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            #try:
+            try:
                 runAuto(sys.argv[2],params.runFullAuto)
-            #except:
-            #    exitProg()
+            except:
+                exitProg()
 
         if o in ("-t" , "--train"):
             try:
@@ -644,7 +644,7 @@ def fileTrainingData(Root, verbose):
             nnTrainedData = Root + '.nnModelC.pkl'
             if verbose:
                 print("\n Running multi-layer perceptron (SKLearn) - Classification")
-    if params.ML_framework == "TF":
+    elif params.ML_framework == "TF":
         if params.useRegressor:
             nnTrainedData = Root + '.nnModelR.h5'
             if verbose:
