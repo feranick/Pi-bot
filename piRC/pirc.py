@@ -19,7 +19,7 @@ from datetime import datetime, date
 
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.preprocessing import StandardScaler
-import libpirc #Comment this out for debug mode.
+#import libpirc #Comment this out for debug mode.
 
 #***************************************************
 # This is needed for installation through pip
@@ -59,6 +59,9 @@ class Conf():
         self.scaler = StandardScaler()
         self.scalFileExt = '_scaler.pkl'
         self.mlp = MultiClassReductor()
+        
+        if not self.debug:
+            importModule("libpirc")
             
     def pircDef(self):
         self.conf['Parameters'] = {
@@ -381,6 +384,8 @@ def runNN_TF(sensors, Cl, Root):
         import tensorflow as tf
         import tensorflow.keras as keras  #tf.keras
         
+        
+        
         if params.nnAlwaysRetrain == False:
             print("\n Opening NN training model...")
             model = keras.models.load_model(nnTrainedData)
@@ -449,6 +454,7 @@ def runNN_TF(sensors, Cl, Root):
         if params.makeQuantizedTFlite:
             makeQuantizedTFmodel(sensors, model, nnTrainedData)
         
+        print("\n Training with TensorFlow v.",tf.version.VERSION)
         print("\n Done. Training model saved in: ",nnTrainedData,"\n")
 
     return model
@@ -666,6 +672,9 @@ def usage():
 def exitProg():
     fullStop(True)
     sys.exit(2)
+
+def importModule(module_name):
+    globals()[module_name] = __import__(module_name)
 
 #*************************************************
 ''' Main initialization routine '''
