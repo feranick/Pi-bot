@@ -6,7 +6,7 @@
 
 ## Hardware
 - robot: RC car with one motor for power, one motor for steering.
-- controller: [Raspberry PI zero w](https://www.raspberrypi.org/products/pi-zero-w/) or [Raspberry Pi 3 B](https://www.raspberrypi.org/products/raspberry-pi-3-model-b/) or [3 B+](https://www.raspberrypi.org/products/raspberry-pi-3-model-b-plus/). 
+- controller: [Raspberry Pi 3 B](https://www.raspberrypi.org/products/raspberry-pi-3-model-b/) or [3 B+](https://www.raspberrypi.org/products/raspberry-pi-3-model-b-plus/). [Raspberry PI zero w](https://www.raspberrypi.org/products/pi-zero-w/)  can be used only with SKLearn and no camera.
 - ADC controller: 4 channel 16bit, [ADS1115](http://www.ti.com/lit/ds/symlink/ads1115.pdf) (Op. Voltage: 3.3V)
 - Accelerometer: XYZ, [ADXL345](http://www.analog.com/en/products/mems/accelerometers/adxl345.html) (Op. Voltage: 3.3V)
 - Stepper motor controller: Adafruit [TB6612](https://learn.adafruit.com/adafruit-tb6612-h-bridge-dc-stepper-motor-driver-breakout/overview), 1.2A DC (Op. Voltage: 3.3V or 5V)
@@ -14,7 +14,8 @@
 - Sonars: 4 [HC-SR04](http://www.micropik.com/PDF/HCSR04.pdf) (left, right, center, back); (Op. Voltage: 5V)
   Warning: the output operating voltage is 5V, while RPi accepts only up to 3.3V, so you need a voltage divider.
 - Radar (support is upcoming): 1 microwave Doppler Radar [HB100](https://www.tindie.com/products/limpkin/hb100-doppler-speed-sensor-arduino-compatible/)
-- Optional: [Raspberry Pi Camera Module](https://www.raspberrypi.org/products/camera-module-v2/)
+- [Raspberry Pi Camera Module](https://www.raspberrypi.org/products/camera-module-v2/)
+- Optional: [Google Coral Edge](https://coral.withgoogle.com/docs/accelerator/get-started/) for on device efficient inference is supported. Please refer to the product page for installation.
 
 - Deprecated IR sensors:
     - 2 front left side break beam sensors [3mm LEDs](https://www.adafruit.com/products/2167)
