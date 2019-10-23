@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191022c
+* version: 20191023a
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -191,10 +191,10 @@ def main():
 
     for o, a in opts:
         if o in ("-r" , "--run"):
-            try:
+            #try:
                 runAuto(sys.argv[2],params.runFullAuto)
-            except:
-                exitProg()
+            #except:
+            #    exitProg()
 
         if o in ("-t" , "--train"):
             try:
@@ -226,7 +226,7 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
                 model = tf.lite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+'.tflite')
                 model.allocate_tensors()
             else:
-                model = tensorflow.keras.models.load_model(fileTrainingData(trainFileRoot, True))
+                model = tf.keras.models.load_model(fileTrainingData(trainFileRoot, True))
         else:
             import tflite_runtime.interpreter as tflite
             # model here is intended as interpreter
