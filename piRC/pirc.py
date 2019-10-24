@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191023d
+* version: 20191024a
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -96,6 +96,7 @@ class Conf():
             'makeQuantizedTFlite' : False,
             'useTFlitePred' : False,
             'TFliteRuntime' : False,
+            'runCoralEdge' : False,
             'debug': False, # do not activate sensors or motors in debug mode
             #'setMaxMem' : False,   # TensorFlow 2.0
             #'maxMem' : 4096,       # TensorFlow 2.0
@@ -135,6 +136,7 @@ class Conf():
             self.makeQuantizedTFlite = self.conf.getboolean('System','makeQuantizedTFlite')
             self.useTFlitePred = self.conf.getboolean('System','useTFlitePred')
             self.TFliteRuntime = self.conf.getboolean('System','TFliteRuntime')
+            self.runCoralEdge = self.conf.getboolean('System','runCoralEdge')
             self.debug = self.conf.getboolean('System','debug')
             
         except:
@@ -219,7 +221,16 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
         #print(" Using SKLearn")
         model = runNN_SK(sensors, Cl, trainFileRoot)
     if params.runNN_TF:
-        if not params.TFliteRuntime:
+        if params.TFliteRuntime:
+            import tflite_runtime.interpreter as tflite
+            # model here is intended as interpreter
+            if params.runCoralEdge:
+                extension = '_edgetpu.tflite'
+            else:
+                extension = '.tflite'
+            model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+extension)
+            model.allocate_tensors()
+        else:
             import tensorflow as tf
             if params.useTFlitePred:
                 # model here is intended as interpreter
@@ -227,11 +238,7 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
                 model.allocate_tensors()
             else:
                 model = tf.keras.models.load_model(fileTrainingData(trainFileRoot, True))
-        else:
-            import tflite_runtime.interpreter as tflite
-            # model here is intended as interpreter
-            model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+'.tflite')
-            model.allocate_tensors()
+
     return model
 
 #*************************************************
@@ -249,7 +256,7 @@ def runAuto(trainFile, type):
     while True:
         if time() - syncTime > params.syncTimeLimit and params.syncTrainModel == True:
             print(" Reloading NN model...")
-            #model = selectMLFramework(sensors, Cl, trainFileRoot)
+            model = selectMLFramework(sensors, Cl, trainFileRoot)
             print(" Synchronizing NN model...\n")
             os.system("./syncTFile.sh " + trainFileRoot + " &")
             syncTime = time()
