@@ -513,6 +513,7 @@ def predictDrive(model, scal, root):
                 sp = params.mlp.inverse_transform(predictions[0])
                 prob = model.predict_proba(nowsensors)[0].tolist()
                 predProb = round(100*max(prob),2)
+
             if params.ML_framework == "TF":
                 if params.useTFlitePred:
                     predictions = getPredictions(nowsensors, model)
@@ -609,8 +610,8 @@ def makeQuantizedTFmodel(A, model, model_name):
     converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_LATENCY]
     #converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    converter.inference_input_type = tf.uint8
-    #converter.inference_input_type = tf.float32
+    #converter.inference_input_type = tf.uint8
+    converter.inference_input_type = tf.float32
     converter.inference_output_type = tf.uint8
     converter.representative_dataset = representative_dataset_gen
     tflite_quant_model = converter.convert()
@@ -637,7 +638,7 @@ def getPredictions(R, interpreter):
 
     # The function `get_tensor()` returns a copy of the tensor data.
     # Use `tensor()` in order to get a pointer to the tensor.
-    predictions = interpreter.get_tensor(output_details[0]['index'])[0][0]
+    predictions = interpreter.get_tensor(output_details[0]['index'])
         
     return predictions
 
