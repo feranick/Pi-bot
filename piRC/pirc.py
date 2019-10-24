@@ -519,7 +519,7 @@ def predictDrive(model, scal, root):
                     predictions = getPredictions(nowsensors, model)
                     predProb = round(100*predictions[0][np.argmax(predictions)]/255,2)
                 else:
-                    predictions = model.predict(R, verbose=0)
+                    predictions = model.predict(nowsensors, verbose=0)
                     predProb = round(100*predictions[0][np.argmax(predictions)],2)
                 #pred_class = np.argmax(predictions)
                 sp = params.mlp.inverse_transform(np.argmax(predictions))
