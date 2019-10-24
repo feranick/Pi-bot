@@ -227,12 +227,10 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
             import tflite_runtime.interpreter as tflite
             # model here is intended as interpreter
             if params.runCoralEdge:
-                extension = '_edgetpu.tflite'
-                model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+extension,
+                model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+'_edgetpu.tflite',
                 experimental_delegates=[tflite.load_delegate(params.edgeTPUSharedLib,{})])
             else:
-                extension = '.tflite'
-                model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+extension)
+                model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+'.tflite')
             model.allocate_tensors()
         else:
             import tensorflow as tf
