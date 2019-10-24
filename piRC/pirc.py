@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191023b
+* version: 20191023c
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -524,6 +524,7 @@ def predictDrive(model, scal, root):
                 predProb = round(100*predictions[0][pred_class],2)
             
         except:
+            print("FAIL")
             sp = [0,0]
             predProb = 0
                     
