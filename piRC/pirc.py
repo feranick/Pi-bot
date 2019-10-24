@@ -524,7 +524,7 @@ def predictDrive(model, scal, root):
                 predProb = round(100*predictions[0][pred_class],2)
             
         except:
-            print("FAIL")
+            print(" FAIL")
             sp = [0,0]
             predProb = 0
                     
@@ -610,6 +610,7 @@ def makeQuantizedTFmodel(A, model, model_name):
     #converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     converter.inference_input_type = tf.uint8
+    #converter.inference_input_type = tf.float32
     converter.inference_output_type = tf.uint8
     converter.representative_dataset = representative_dataset_gen
     tflite_quant_model = converter.convert()
