@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191024a
+* version: 20191024b
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -62,6 +62,8 @@ class Conf():
         
         if not self.debug:
             importModule("libpirc")
+            
+        self.edgeTPUSharedLib = "libedgetpu.so.1"
             
     def pircDef(self):
         self.conf['Parameters'] = {
@@ -226,9 +228,11 @@ def selectMLFramework(sensors, Cl, trainFileRoot):
             # model here is intended as interpreter
             if params.runCoralEdge:
                 extension = '_edgetpu.tflite'
+                model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+extension,
+                experimental_delegates=[tflite.load_delegate(params.edgeTPUSharedLib,{})])
             else:
                 extension = '.tflite'
-            model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+extension)
+                model = tflite.Interpreter(model_path=os.path.splitext(fileTrainingData(trainFileRoot, True))[0]+extension)
             model.allocate_tensors()
         else:
             import tensorflow as tf
