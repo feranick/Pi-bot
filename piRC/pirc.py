@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191023c
+* version: 20191023d
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -513,16 +513,16 @@ def predictDrive(model, scal, root):
                 sp = params.mlp.inverse_transform(predictions[0])
                 prob = model.predict_proba(nowsensors)[0].tolist()
                 predProb = round(100*max(prob),2)
-
+        
             if params.ML_framework == "TF":
                 if params.useTFlitePred:
                     predictions = getPredictions(nowsensors, model)
+                    predProb = round(100*predictions[0][np.argmax(predictions)]/255,2)
                 else:
                     predictions = model.predict(R, verbose=0)
-                    
-                pred_class = np.argmax(predictions)
-                sp = params.mlp.inverse_transform(pred_class)
-                predProb = round(100*predictions[0][pred_class],2)
+                    predProb = round(100*predictions[0][np.argmax(predictions)],2)
+                #pred_class = np.argmax(predictions)
+                sp = params.mlp.inverse_transform(np.argmax(predictions))
             
         except:
             print(" FAIL")
