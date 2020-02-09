@@ -3,7 +3,7 @@
 '''
 **********************************************************
 * PiRC - Self-driving RC car via Machine Learning
-* version: 20191024b
+* version: 20200209a
 * By: Nicola Ferralis <feranick@hotmail.com>
 ***********************************************************
 '''
@@ -607,22 +607,26 @@ def makeQuantizedTFmodel(A, model, model_name):
     import tensorflow.keras as keras  #tf.keras
         
     print("\n  Creating quantized TensorFlowLite Model...\n")
+    A2 = tf.cast(A, tf.float32)
+    A = tf.data.Dataset.from_tensor_slices((A2)).batch(1)
+    
     def representative_dataset_gen():
-        for i in range(A.shape[0]):
-            yield [A[i:i+1].astype(np.float32)]
+        for input_value in A.take(100):
+            yield[input_value]
+            
     try:
-        converter = tf.lite.TFLiteConverter.from_keras_model(model)    # TensorFlow 2.x
+        converter = tf.compat.v1.lite.TFLiteConverter.from_keras_model_file(dP.model_name)    # TF2.x
+        #converter = tf.lite.TFLiteConverter.from_keras_model(model)    # TF2.x only. Does not support EdgeTPU
     except:
-        converter = tf.lite.TFLiteConverter.from_keras_model_file(model_name)  # TensorFlow 1.x
+        converter = tf.lite.TFLiteConverter.from_keras_model_file(dP.model_name)  # T1.x
 
     #converter.optimizations = [tf.lite.Optimize.DEFAULT]
     converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_LATENCY]
     #converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
-    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    #converter.inference_input_type = tf.uint8
-    converter.inference_input_type = tf.float32
-    converter.inference_output_type = tf.uint8
     converter.representative_dataset = representative_dataset_gen
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    converter.inference_input_type = tf.uint8
+    converter.inference_output_type = tf.uint8
     tflite_quant_model = converter.convert()
 
     with open(os.path.splitext(model_name)[0]+'.tflite', 'wb') as o:
@@ -640,7 +644,7 @@ def getPredictions(R, interpreter):
 
     # Test model on random input data.
     input_shape = input_details[0]['shape']
-    input_data = np.array(R, dtype=np.float32)
+    input_data = np.array(R*255, dtype=np.uint8)
     interpreter.set_tensor(input_details[0]['index'], input_data)
 
     interpreter.invoke()

@@ -3,10 +3,10 @@ from setuptools import setup, find_packages
 setup(
     name='pirc',
     packages=find_packages(),
-    install_requires=['numpy', 'scikit-learn', 'adafruit-adxl345', 'adafruit-ads1x15', 'Pillow', 'configparser'],
+    install_requires=['numpy', 'scikit-learn', 'adafruit-adxl345', 'adafruit-ads1x15', 'Pillow', 'configparser', 'tensorflow', 'tflite_runtime'],
     entry_points={'console_scripts' : ['pirc=pirc:pirc']},
     py_modules=['pirc','libpirc'],
-    version='20191024b',
+    version='20200209a',
     description='Self-driving RC car',
     long_description= """ Self-driving RC car """,
     author='Nicola Ferralis',
