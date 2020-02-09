@@ -15,7 +15,7 @@
   Warning: the output operating voltage is 5V, while RPi accepts only up to 3.3V, so you need a voltage divider.
 - Radar (support is upcoming): 1 microwave Doppler Radar [HB100](https://www.tindie.com/products/limpkin/hb100-doppler-speed-sensor-arduino-compatible/)
 - [Raspberry Pi Camera Module](https://www.raspberrypi.org/products/camera-module-v2/)
-- Optional: [Google Coral Edge](https://coral.withgoogle.com/docs/accelerator/get-started/) for on device efficient inference is supported. Please refer to the product page for installation.
+- Optional: [Google Coral EdgeTPU](https://coral.ai/docs/accelerator/get-started/) for on device efficient inference is supported. Please refer to the product page for installation.
 
 - Deprecated IR sensors:
     - 2 front left side break beam sensors [3mm LEDs](https://www.adafruit.com/products/2167)
@@ -36,7 +36,7 @@ Machine learing is carried out using Sklearn by default, which needs the followi
     
 Alternatively and only when used with a Raspberry Pi 3, TensorFlow can be used instead. To install: 
 
-    sudo pip3 install tensorflow
+    sudo pip3 install tensorflow tflite-runtime
 
 ## Installation
 When inside teh folder `Pi-bot/piRC` from the command line:
