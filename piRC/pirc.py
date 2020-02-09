@@ -391,9 +391,12 @@ def runNN_TF(sensors, Cl, Root):
 
     try:
         import tensorflow as tf
+        from pkg_resources import parse_version
+        
+        if parse_version(tf.version.VERSION) < parse_version('2.0.0'):
+            tf.compat.v1.enable_eager_execution()
+        
         import tensorflow.keras as keras  #tf.keras
-        
-        
         
         if params.nnAlwaysRetrain == False:
             print("\n Opening NN training model...")
@@ -615,10 +618,10 @@ def makeQuantizedTFmodel(A, model, model_name):
             yield[input_value]
             
     try:
-        converter = tf.compat.v1.lite.TFLiteConverter.from_keras_model_file(dP.model_name)    # TF2.x
+        converter = tf.compat.v1.lite.TFLiteConverter.from_keras_model_file(model_name)    # TF2.x
         #converter = tf.lite.TFLiteConverter.from_keras_model(model)    # TF2.x only. Does not support EdgeTPU
     except:
-        converter = tf.lite.TFLiteConverter.from_keras_model_file(dP.model_name)  # T1.x
+        converter = tf.lite.TFLiteConverter.from_keras_model_file(model_name)  # T1.x
 
     #converter.optimizations = [tf.lite.Optimize.DEFAULT]
     converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_LATENCY]
